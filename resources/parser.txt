@@ -1,0 +1,32 @@
+<PROGRAM>			-> <META> <IMPORTS> <DEFINES> <CONTAINER>
+
+<META>				-> <METANR> <META> | $
+<METANR>			-> meta dp <VALS> pc
+
+<IMPORTS>			-> <IMPORT> <IMPORTS> | $
+<IMPORT>			-> import <VALS> pc
+
+<DEFINES>			-> <DEFINE> <DEFINES> | $
+<DEFINE>			-> define dp op type dp <VALS> pc name dp <VALS> pc content dp <VALS> pc cp
+
+<TAG>				-> <TAGNR> <TAG> | $
+<TAGNR>				-> <CONTAINER> | <ITEMCONTAINER> | <RADIOGROUP> | <COMPONENT> | <INCLUDE>
+
+<CONTAINER>			-> container dp op <ATTRS> <TAG> cp
+<ITEMCONTAINER>		-> itemcont dp op <ATTRS> <ITEMS> cp
+<RADIOGROUP>		-> radiogroup dp op <ATTRS> <RADIOBUTTONS> cp
+<COMPONENT>			-> component dp op <ATTRS> cp
+<INCLUDE>			-> include <VALS>
+
+<ITEMS>				-> item dp op title dp <VALS> pc <TAG> cp
+<RADIOBUTTONS>		-> <RADIOBUTTON> <RADIOBUTTONS> | $
+<RADIOBUTTON>		-> radiobutton dp op <ATTRS> cp
+<ATTRS>				-> <ATTR> <ATTRS> | $
+<ATTR>				-> attr dp <VALS> pc
+
+<VALS>				-> <VAL> | <VAL> coma <VALS>
+<VAL>				-> bool | color | font | tdecor | align | effect | animation | charset | integer 
+					-> real | text | definetype | none
+
+
+
