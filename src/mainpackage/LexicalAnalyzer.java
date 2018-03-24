@@ -17,7 +17,8 @@ public class LexicalAnalyzer {
 	 * las categorías menos restrictivas al final*/
 	
 	private int tabCont;		// Contador de tabuladores para saber cuando agrupar componentes
-	
+	private Symbol history;		// Guarda el último símbolo emitido por si se necesita devolver
+	private boolean resendSymbol;	// Indica si tenemos que volver a emitir el último símbolo
 	private IOManager inputFile;
 	private String line;
 	private int closeStack;
@@ -74,11 +75,17 @@ public class LexicalAnalyzer {
 	}
 	
 	
-	public String getNext() {
-		// Si tenemos en pila algún cierre de bloque, lo emitimos primero
+	public Symbol next() {
+		// Primero comprobaremos si hay algún símbolo que deba ser emitido de nuevo
+		if(resendSymbol) {
+			resendSymbol = false;
+			return history;
+		}
+		
+		// Si tenemos en pila algún cierre de bloque, lo emitimos antes de seguir
 		if(closeStack > 0) {
 			closeStack--;
-			return CP;
+			return new Symbol(CP, null);
 		}
 		
 		// Si aun queda línea por procesar, no necesitamos leer del fichero
@@ -92,9 +99,10 @@ public class LexicalAnalyzer {
 			
 			int maxMatch = 0;
 			int index = -1;
-
+			String bestMatch = "";
+			
 			for(int i=0; i<Lexer.lexer.length; i++) {
-				int matchLen = 0;
+				int matchLen = 0;			
 				String match = REManager.validate(Lexer.lexer[i][1], line);
 				if(match != null) {
 					matchLen = match.length();
@@ -102,6 +110,7 @@ public class LexicalAnalyzer {
 				// Si encontramos un match mayor al máximo actual lo sustituimos
 				if(matchLen > maxMatch) {
 					maxMatch = matchLen;
+					bestMatch = match;
 					index = i;
 				}
 			}
@@ -120,7 +129,7 @@ public class LexicalAnalyzer {
 				line = "";
 				
 				// Continuamos con la siguiente línea
-				return getNext();
+				return next();
 			}
 			
 			// Si se ha producido coincidencia, restamos de la cadena la parte procesada
@@ -128,16 +137,17 @@ public class LexicalAnalyzer {
 			
 			// Los comentarios los descartamos
 			if(Lexer.lexer[index][0].compareTo(COMMENT) == 0) {
-				return getNext();
+				return next();
 			}
 			
 			// Los espacios los descartamos, entonces devolvemos la siguiente ocurrencia
 			if(Lexer.lexer[index][0].compareTo(SKIP) == 0) {
-				return getNext();
+				return next();
 			}
 			
 			// Por último retornamos el símbolo de la categoría que hizo mejor coincidencia
-			return Lexer.lexer[index][0];
+			history = new Symbol(Lexer.lexer[index][0], bestMatch);
+			return history;
 		
 		}else { // En caso contrario, cargamos la siguiente línea
 			try {
@@ -169,7 +179,7 @@ public class LexicalAnalyzer {
 				// Es una línea solo con espacios, entonces los borramos
 				line = "";
 				// Al ser una línea vacía, no la contabilizamos y devolvemos el siguiente símbolo
-				return getNext();
+				return next();
 			}
 			
 			// Aqui contamos cuantos conjuntos de 4 espacios hay al principio de la línea
@@ -185,16 +195,24 @@ public class LexicalAnalyzer {
 			// Si es mayor, emitimos op, si es menor cp, en caso contrario pc, para separar sentencias
 			if(ntabs > tabCont) {
 				tabCont = ntabs;
-				return OP;
+				history = new Symbol(OP, null);
+				return history;
 			}else if(ntabs < tabCont) {
 				tabCont = ntabs;
 				// Hacemos una pila para que si hay que devolver mas cierres, se haga en las siguientes llamadas
 				closeStack = (tabCont - ntabs)-1;
-				return CP;
+				history = new Symbol(CP, null);
+				return history;
 			}
 			
-			return PC;
+			history = new Symbol(PC, null);
+			return history;
 		}
+	}
+	
+	/** Devuelve la línea que se está analizando en un momento determinado */
+	public long getLineNumber() {
+		return inputFile.getLineNumber();
 	}
 	
 	/** Cierra los ficheros utilizados por el analizador léxico */
@@ -207,6 +225,10 @@ public class LexicalAnalyzer {
 		}
 	}
 	
+	/** Manda a reenviar el último símbolo emitido */
+	public void undo() {
+		resendSymbol = true;
+	}
 	
 	/** Elimina los blancos al final de las lineas */
 	public String trimEnd(String c) {

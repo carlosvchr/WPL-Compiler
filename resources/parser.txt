@@ -1,4 +1,4 @@
-<PROGRAM>			-> <META> <IMPORTS> <DEFINES> <CONTAINER>
+<PROGRAM>			-> <META> <IMPORTS> <DEFINES> <TAG>
 
 <META>				-> <METANR> <META> | $
 <METANR>			-> meta dp <VALS> pc

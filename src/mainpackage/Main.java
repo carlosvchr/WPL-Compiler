@@ -20,10 +20,10 @@ public class Main {
 		LexicalAnalyzer la = new LexicalAnalyzer();
 		la.start(path);
 		
-		String sym;
-		while((sym = la.getNext()) != null) {
-			if(sym.length() > 0)
-				System.out.println(sym);
+		Symbol s;
+		while((s = la.next()) != null) {
+			
+				System.out.println(s.sym()+"\t\t"+(s.val()!=null ? s.val():""));
 		}
 		
 		//System.out.println(REManager.validate("^\\t", "	a"));
