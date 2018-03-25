@@ -14,6 +14,7 @@ public class Lexer {
 	public static String _s = "s";
 	public static String _measure = "measure";
 	public static String _meta = "meta";
+	public static String _header = "header";
 	public static String _import = "import";
 	public static String _define = "define";
 	public static String _include = "include";
@@ -63,6 +64,7 @@ public class Lexer {
 			{_type,				"^type"},
 			{_name,				"^name"},
 			{_content,			"^content"},
+			{_header,			"^header"},
 			{_container,		"^((box)|(vbox)|(hbox)|(sidebox)|(modalbox))"},
 			{_itemcont,			"^((tablebox)|(dropdownbox)|(tabbedbox)|(accordionbox)|(slideshow))"},
 			{_radiogroup,		"^radiogroup"},

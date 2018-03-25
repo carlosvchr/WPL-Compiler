@@ -16,9 +16,9 @@
 <ITEMCONTAINER>		-> itemcont dp op <ATTRS> <ITEMS> cp
 <RADIOGROUP>		-> radiogroup dp op <ATTRS> <RADIOBUTTONS> cp
 <COMPONENT>			-> component dp op <ATTRS> cp
-<INCLUDE>			-> include <VALS>
+<INCLUDE>			-> include <VALS> pc
 
-<ITEMS>				-> item dp op title dp <VALS> pc <TAG> cp
+<ITEMS>				-> item dp op header dp <VALS> pc <TAG> cp
 <RADIOBUTTONS>		-> <RADIOBUTTON> <RADIOBUTTONS> | $
 <RADIOBUTTON>		-> radiobutton dp op <ATTRS> cp
 <ATTRS>				-> <ATTR> <ATTRS> | $
