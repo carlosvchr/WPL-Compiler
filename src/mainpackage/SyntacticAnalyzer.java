@@ -38,7 +38,9 @@ public class SyntacticAnalyzer {
 	
 	/** Muestra un mensaje de error */
 	private void printSyntacticError() {
-		System.err.println("Syntactic Analyzer: Error found on line "+lex.getLineNumber()+".: ..."+lex.next().val());
+		lex.undo();
+		Symbol saux = lex.next();
+		System.err.println("Syntactic Analyzer: Error found on line "+lex.getLineNumber()+".: ..."+saux.val()+"("+saux.sym()+")");
 	}
 	
 	/** Comprueba si un terminal forma parte de uno de un no terminal */
@@ -696,7 +698,7 @@ public class SyntacticAnalyzer {
 				lex.next().sym().compareTo(Lexer._animation) != 0 && lex.next().sym().compareTo(Lexer._charset) != 0 &&
 				lex.next().sym().compareTo(Lexer._integer) != 0 && lex.next().sym().compareTo(Lexer._real) != 0 &&
 				lex.next().sym().compareTo(Lexer._text) != 0 && lex.next().sym().compareTo(Lexer._definetype) != 0 &&
-				lex.next().sym().compareTo(Lexer._none) != 0) {
+				lex.next().sym().compareTo(Lexer._none) != 0 && lex.next().sym().compareTo(Lexer._measure) != 0) {
 			printSyntacticError();
 			return false;
 		}

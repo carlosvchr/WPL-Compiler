@@ -2,6 +2,7 @@ package mainpackage;
 
 public class Lexer {
 	
+	public static String symComment = "#";
 	public static String _comment = "comment";
 	public static String _dp = "dp";
 	public static String _op = "op";
@@ -9,6 +10,7 @@ public class Lexer {
 	public static String _pc = "pc";
 	public static String _br = "br";
 	public static String _nl = "nl";
+	public static String _id = "id";
 	public static String _coma = "coma";
 	public static String _tab = "tab";
 	public static String _s = "s";
@@ -56,7 +58,7 @@ public class Lexer {
 			{_coma,				"^,"},
 			{_tab,				"^(\\s{4})"},
 			{_s,				"\\s{1}"},
-			{_measure,			"^((px)|(%))"},
+			{_measure,			"^((0|[1-9][0-9]*)((px)|(%)))"},
 			{_meta,				"^((author)|(keywords)|(lang)|(redirect)|(pageicon)|(title)|(charset)|(description))"},
 			{_import,			"^import"},
 			{_define,			"^define"},
@@ -86,5 +88,8 @@ public class Lexer {
 			{_definetype,		"^((color)|(font)|(tag)|(attr))"},
 			{_indicators,	 	"^((dots)|(numbers)|(miniatures))"},
 			{_slidecontrols,	"^((angulars-bottom)|(angulars)|(arrows-bottom)|(arrows))"},
-			{_none,				"^none"}};
+			{_none,				"^none"},
+			{_id,				"^([a-zA-Z_][a-zA-Z0-9_-])"}};
 }
+
+

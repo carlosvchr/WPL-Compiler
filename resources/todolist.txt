@@ -1,0 +1,4 @@
+TODO LIST
+
+1. Arreglar los breakLines en el analizador lexico. Esta bien que los brakes solo se hagan con texto.
+Pero se debe controlar los espacios antes y despues del simbolo BR

@@ -14,18 +14,18 @@ public class Main {
 		//String path = "/home/carlos/Escritorio/pruebawpl.txt";
 		String path = "/home/carlos/Escritorio/pruebas.txt";
 		
-		SyntacticAnalyzer syntacticAnalyzer = new SyntacticAnalyzer(path);
-		syntacticAnalyzer.start();
+		//SyntacticAnalyzer syntacticAnalyzer = new SyntacticAnalyzer(path);
+		//syntacticAnalyzer.start();
 		
-		//LexicalAnalyzer la = new LexicalAnalyzer();
-		//la.start(path);
+		LexicalAnalyzer la = new LexicalAnalyzer();
+		la.start(path);
 		
-		//Symbol s;
-		//while((s = la.next()) != null) {	
-		//		System.out.println(s.sym()+"\t\t"+(s.val()!=null ? s.val():""));
-		//}
+		Symbol s;
+		while((s = la.next()) != null) {	
+				System.out.println(s.sym()+"\t\t"+(s.val()!=null ? s.val():""));
+		}
 		
-		//System.out.println(REManager.validate("^\\t", "	a"));
+		System.out.println(REManager.validate("^\\t", "	a"));
 	}
 
 	

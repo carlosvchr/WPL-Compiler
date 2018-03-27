@@ -26,7 +26,7 @@
 
 <VALS>				-> <VAL> | <VAL> coma <VALS>
 <VAL>				-> bool | color | font | tdecor | align | effect | animation | charset | integer 
-					-> real | text | definetype | none
+					-> real | text | definetype | measure | none
 
 
 

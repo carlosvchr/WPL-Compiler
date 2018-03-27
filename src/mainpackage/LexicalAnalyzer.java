@@ -6,6 +6,7 @@ public class LexicalAnalyzer {
 
 	private final String OP = "op";
 	private final String CP = "cp";
+	private final String DP = "dp";
 	private final String PC = "pc";
 	private final String COMMENT = "comment";
 	private final String SKIP = "s";
@@ -21,7 +22,8 @@ public class LexicalAnalyzer {
 	private boolean resendSymbol;	// Indica si tenemos que volver a emitir el último símbolo
 	private IOManager inputFile;
 	private String line;
-	private int closeStack;
+	private int closeStack;		// Pila de CP consecutivos para que emitan uno por llamada
+	private int openedP;		// Permite conocer cuantos OP hay abiertos 
 	
 	/** Debido a que el analizador sintáctico va pidiendo al analizador léxico
 	 * los símbolos uno por uno, se requiere un función que procese el fuente
@@ -71,7 +73,7 @@ public class LexicalAnalyzer {
 			e.printStackTrace();
 		}
 		closeStack = 0;
-		
+		openedP = 0;
 	}
 	
 	
@@ -85,7 +87,8 @@ public class LexicalAnalyzer {
 		// Si tenemos en pila algún cierre de bloque, lo emitimos antes de seguir
 		if(closeStack > 0) {
 			closeStack--;
-			return new Symbol(CP, null);
+			openedP--;
+			return new Symbol(CP, "}");
 		}
 		
 		// Si aun queda línea por procesar, no necesitamos leer del fichero
@@ -152,10 +155,34 @@ public class LexicalAnalyzer {
 		}else { // En caso contrario, cargamos la siguiente línea
 			try {
 				// Cuando cargamos la linea comprobamos que no haya ningun break
-				String cline;
-				while((cline = trimEnd(inputFile.getLine())).endsWith(BR)) {
-					// Mientras haya breaks, se van uniendo las lineas (quitando el caracter BR)
-					line += cline.substring(0, cline.length()-1);
+				String cline = inputFile.getLine();
+				// Comprobamos que queden lineas por leer
+				if(cline == null) {
+					// Si no quedan lineas vamos devolviendo los CP que esten abiertos
+					if(openedP > 0) {
+						openedP--;
+						history = new Symbol(CP, "}");
+						return history;
+					}else {
+						return null;
+					}
+				}
+				// Si es distinto de null, entonces leemos la linea
+				cline = trimEnd(cline);
+				boolean finishLine = false;
+				while(!finishLine) {
+					if(trimEnd(cline).endsWith(BR)) {
+						// Mientras haya breaks, se van uniendo las lineas (quitando el caracter BR)
+						line += cline.substring(0, cline.length()-1);
+						cline = inputFile.getLine();
+						// Verificacion por si llegamos a final de fichero
+						if(cline == null) {
+							finishLine = true;
+						}
+					}else {
+						finishLine = true;
+					}
+					
 				}
 				// Finalmente agregamos la ultima linea que no llevara BR
 				line += cline;
@@ -163,10 +190,9 @@ public class LexicalAnalyzer {
 				ioe.printStackTrace();
 			}
 			
-			
-			// Si no quedan líneas por procesar del fichero devolvemos null
-			if(line == null) {
-				return null;
+			// Eliminamos las lineas que son comentarios
+			if(line.trim().startsWith(Lexer.symComment)) {
+				return next();
 			}
 			
 			/* Lo primero es sustituir los tabuladores por conjuntos de 4 espacios 
@@ -195,18 +221,26 @@ public class LexicalAnalyzer {
 			// Si es mayor, emitimos op, si es menor cp, en caso contrario pc, para separar sentencias
 			if(ntabs > tabCont) {
 				tabCont = ntabs;
-				history = new Symbol(OP, null);
+				history = new Symbol(OP, "{");
+				openedP++;
 				return history;
 			}else if(ntabs < tabCont) {
-				tabCont = ntabs;
 				// Hacemos una pila para que si hay que devolver mas cierres, se haga en las siguientes llamadas
 				closeStack = (tabCont - ntabs)-1;
-				history = new Symbol(CP, null);
+				tabCont = ntabs;
+				history = new Symbol(CP, "}");
+				openedP--;
 				return history;
+			}else {  // Si es una linea normal
+				// Comprobamos que no se haya emitido ya un PC, que se emita al comienzo o despues de OP, CP o DP
+				if(history != null && history.sym().compareTo(PC) != 0 && history.sym().compareTo(OP) != 0
+						&& history.sym().compareTo(CP) != 0 && history.sym().compareTo(DP) != 0) {
+					history = new Symbol(PC, ";");
+					return history;
+				}else {
+					return next();
+				}
 			}
-			
-			history = new Symbol(PC, null);
-			return history;
 		}
 	}
 	
