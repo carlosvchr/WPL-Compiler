@@ -1,9 +1,46 @@
 package mainpackage;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Stack;
+import java.util.Deque;
 
 public class SyntacticAnalyzer {
+	
+	/** En esta clase se procede con la siguiente implementación: *********************************************
+	 * 
+	 * <PROGRAM>			-> <IMPORTS> <META> <DEFINES> <TAG>
+	 *
+	 * <META>				-> <METANR> <META> | $
+	 * <METANR>				-> meta dp <VALS> pc
+	 *
+	 * <IMPORTS>			-> <IMPORT> <IMPORTS> | $
+	 * <IMPORT>				-> import <VALS> pc
+	 *
+	 * <DEFINES>			-> <DEFINE> <DEFINES> | $
+	 * <DEFINE>				-> define dp op type dp <VALS> pc name dp <VALS> pc content dp <VALS> pc cp
+	 *
+	 * <TAG>				-> <TAGNR> <TAG> | $
+	 * <TAGNR>				-> <CONTAINER> | <ITEMCONTAINER> | <RADIOGROUP> | <COMPONENT> | <INCLUDE>
+	 *
+	 * <CONTAINER>			-> container dp op <ATTRS> <TAG> cp
+	 * <ITEMCONTAINER>		-> itemcont dp op <ATTRS> <ITEMS> cp
+	 * <RADIOGROUP>			-> radiogroup dp op <ATTRS> <RADIOBUTTONS> cp
+	 * <COMPONENT>			-> component dp op <ATTRS> cp
+	 * <INCLUDE>			-> include <VALS> pc
+	 *
+	 * <ITEMS>				-> <ITEM> <ITEMS> | $
+	 * <ITEM>				-> item dp op header dp <VALS> pc <TAG> cp
+	 * <RADIOBUTTONS>		-> <RADIOBUTTON> <RADIOBUTTONS> | $
+	 * <RADIOBUTTON>		-> radiobutton dp op <ATTRS> cp
+	 * <ATTRS>				-> <ATTR> <ATTRS> | $
+	 * <ATTR>				-> attr dp <VALS> pc
+	 *
+	 * <VALS>				-> <VAL> | <VAL> coma <VALS>
+	 * <VAL>				-> bool | color | font | tdecor | align | effect | animation | charset | integer 
+	 *						-> real | text | definetype | measure | none 
+	 *
+	 *********************************************************************************************************/
+	
 	
 	/**
 	 * 
@@ -13,9 +50,10 @@ public class SyntacticAnalyzer {
 	 * 
 	 * */
 	
+	/** No terminales */
 	private enum NT {
 	    META, METANR, IMPORTS, IMPORT, DEFINES, DEFINE, TAG, TAGNR, CONTAINER,
-	    ITEMCONTAINER, RADIOGROUP, COMPONENT, INCLUDE, ITEMS, RADIOBUTTONS, 
+	    ITEMCONTAINER, RADIOGROUP, COMPONENT, INCLUDE, ITEM, ITEMS, RADIOBUTTONS, 
 	    RADIOBUTTON, ATTRS, ATTR, VALS, VAL
 	}
 
@@ -29,14 +67,17 @@ public class SyntacticAnalyzer {
 	CodeGenerator generator = null;
 	
 	// Pila donde registramos las etiquetas abiertas para cerrarlas cuando llegue un cp
-	Stack<String> openedTagsStack;
+	Deque<Symbol> openedTagsStack;
 	
-	/** @param Fichero fuente */
+	
+	/** @param Fichero fuente 
+	 *  @param Fichero donde se genera el código */
 	public SyntacticAnalyzer(String path, String output) {
 		generator = new CodeGenerator(output);
 		sem = new SemanticAnalyzer();
 		lex = new LexicalAnalyzer();
 		lex.start(path);
+		openedTagsStack = new ArrayDeque<Symbol>();
 	}
 	
 	/** Inicia el procesado del fuente */
@@ -44,7 +85,7 @@ public class SyntacticAnalyzer {
 		analyzeProgram();
 	}
 	
-	/** Muestra un mensaje de error */
+	/** Muestra un mensaje de error sintáctico */
 	private void printSyntacticError(String s) {
 		lex.undo();
 		Symbol saux = lex.next();
@@ -435,10 +476,14 @@ public class SyntacticAnalyzer {
 	/** <CONTAINER>	-> container dp op <ATTRS> <TAG> cp */
 	private boolean analyzeContainer() {
 		
-		if(lex.next().sym().compareTo(Lexer._container) != 0) {
+		Symbol s = lex.next();
+		if(s.sym().compareTo(Lexer._container) != 0) {
 			printSyntacticError("container container");
 			return false;
 		}
+		
+		openedTagsStack.push(s);
+		generator.openTag(s.val());
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
 			printSyntacticError("DP container");
@@ -450,11 +495,14 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		Symbol s = lex.next();
+		s = lex.next();
 		lex.undo();
 		if(belongs(NT.ATTRS, s.sym())) {
 			analyzeAttrs();
 		}
+		
+		// Finalizamos la etiqueta de apertura tras los atributos
+		generator.finishOpenTag();
 		
 		s = lex.next();
 		lex.undo();
@@ -467,6 +515,8 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
+		generator.closeTag(openedTagsStack.pop().val());
+		
 		return true;
 	}
 	
@@ -474,10 +524,14 @@ public class SyntacticAnalyzer {
 	/** <ITEMCONTAINER>	-> itemcont dp op <ATTRS> <ITEMS> cp */
 	private boolean analyzeItemcontainer() {
 		
-		if(lex.next().sym().compareTo(Lexer._itemcont) != 0) {
+		Symbol s = lex.next();
+		if(s.sym().compareTo(Lexer._itemcont) != 0) {
 			printSyntacticError("itemcont itcont");
 			return false;
 		}
+		
+		openedTagsStack.push(s);
+		generator.openTag(s.val());
 
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
 			printSyntacticError("DP itcont");
@@ -489,11 +543,14 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 
-		Symbol s = lex.next();
+		s = lex.next();
 		lex.undo();
 		if(belongs(NT.ATTRS, s.sym())) {
 			analyzeAttrs();
 		}
+		
+		// Finalizamos la etiqueta de apertura tras los atributos
+		generator.finishOpenTag();
 
 		s = lex.next();
 		lex.undo();
@@ -506,6 +563,8 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
+		generator.closeTag(openedTagsStack.pop().val());
+		
 		return true;
 	}
 	
@@ -513,10 +572,14 @@ public class SyntacticAnalyzer {
 	/** <RADIOGROUP> -> radiogroup dp op <ATTRS> <RADIOBUTTONS> cp */
 	private boolean AnalyzeRadiogroup() {
 
-		if(lex.next().sym().compareTo(Lexer._radiogroup) != 0) {
+		Symbol s = lex.next();
+		if(s.sym().compareTo(Lexer._radiogroup) != 0) {
 			printSyntacticError("radiogroup radiogroup");
 			return false;
 		}
+		
+		openedTagsStack.push(s);
+		generator.openTag(s.val());
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
 			printSyntacticError("DP radiogroup");
@@ -528,11 +591,14 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		Symbol s = lex.next();
+		s = lex.next();
 		lex.undo();
 		if(belongs(NT.ATTRS, s.sym())) {
 			analyzeAttrs();
 		}
+		
+		// Finalizamos la etiqueta de apertura tras los atributos
+		generator.finishOpenTag();
 		
 		s = lex.next();
 		lex.undo();
@@ -545,6 +611,8 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
+		generator.closeTag(openedTagsStack.pop().val());
+		
 		return true;
 	}
 	
@@ -552,10 +620,14 @@ public class SyntacticAnalyzer {
 	/** <COMPONENT>	-> component dp op <ATTRS> cp */
 	private boolean analyzeComponent() {
 		
-		if(lex.next().sym().compareTo(Lexer._component) != 0) {
+		Symbol s = lex.next();
+		if(s.sym().compareTo(Lexer._component) != 0) {
 			printSyntacticError("component component");
 			return false;
 		}
+		
+		openedTagsStack.push(s);
+		generator.openTag(s.val());
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
 			printSyntacticError("DP component");
@@ -567,16 +639,21 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		Symbol s = lex.next();
+		s = lex.next();
 		lex.undo();
 		if(belongs(NT.ATTRS, s.sym())) {
 			analyzeAttrs();
 		}
 
+		// Finalizamos la etiqueta de apertura tras los atributos
+		generator.finishOpenTag();
+		
 		if(lex.next().sym().compareTo(Lexer._cp) != 0) {
 			printSyntacticError("CP component");
 			return false;
 		}
+		
+		generator.closeTag(openedTagsStack.pop().val());
 		
 		return true;
 	}
@@ -629,10 +706,14 @@ public class SyntacticAnalyzer {
 	/** <ITEM> -> item dp op header dp <VALS> pc <TAG> cp */
 	private boolean analyzeItem() {
 
-		if(lex.next().sym().compareTo(Lexer._item) != 0) {
+		Symbol s = lex.next();
+		if(s.sym().compareTo(Lexer._item) != 0) {
 			printSyntacticError("item item");
 			return false;
 		}
+		
+		openedTagsStack.push(s);
+		generator.openTag(s.val());
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
 			printSyntacticError("DP item");
@@ -654,7 +735,7 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		Symbol s = lex.next();
+		s = lex.next();
 		if(belongs(NT.VALS, s.sym())) {
 			lex.undo();
 			analyzeVals();
@@ -667,6 +748,9 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 
+		// Finalizamos la etiqueta de apertura tras los atributos
+		generator.finishOpenTag();
+		
 		s = lex.next();
 		lex.undo();
 		if(belongs(NT.TAG, s.sym())) {
@@ -677,6 +761,8 @@ public class SyntacticAnalyzer {
 			printSyntacticError("CP item");
 			return false;
 		}
+		
+		generator.closeTag(openedTagsStack.pop().val());
 				
 		return true;
 	}
@@ -700,10 +786,14 @@ public class SyntacticAnalyzer {
 	/** <RADIOBUTTON> -> radiobutton dp op <ATTRS> cp */
 	private boolean analyzeRadiobutton() {
 		
-		if(lex.next().sym().compareTo(Lexer._radiobutton) != 0) {
+		Symbol s = lex.next();
+		if(s.sym().compareTo(Lexer._radiobutton) != 0) {
 			printSyntacticError("radiobutton radiobutton");
 			return false;
 		}
+		
+		openedTagsStack.push(s);
+		generator.openTag(s.val());
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
 			printSyntacticError("DP radiobutton");
@@ -715,16 +805,21 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		Symbol s = lex.next();
+		s = lex.next();
 		lex.undo();
 		if(belongs(NT.ATTRS, s.sym())) {
 			analyzeAttrs();
 		}
 		
+		// Finalizamos la etiqueta de apertura tras los atributos
+		generator.finishOpenTag();
+		
 		if(lex.next().sym().compareTo(Lexer._cp) != 0) {
 			printSyntacticError("CP radiobutton");
 			return false;
 		}
+		
+		generator.closeTag(openedTagsStack.pop().val());
 		
 		return true;
 	}
@@ -749,7 +844,8 @@ public class SyntacticAnalyzer {
 	/** <ATTR> -> attr dp <VALS> pc */
 	private boolean analyzeAttr() {
 		
-		if(lex.next().sym().compareTo(Lexer._attr) != 0) {
+		Symbol attr = lex.next();
+		if(attr.sym().compareTo(Lexer._attr) != 0) {
 			printSyntacticError("attr attr");
 			return false;
 		}
@@ -759,18 +855,26 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
+		Symbol[] vals;
 		Symbol s = lex.next();
 		if(belongs(NT.VALS, s.sym())) {
 			lex.undo();
-			analyzeVals();
+			vals = analyzeVals();
 		}else {
 			printSyntacticError("val attr");
+			return false;
 		}
 
 		if(lex.next().sym().compareTo(Lexer._pc) != 0) {
 			printSyntacticError("PC attr");
 			return false;
 		}
+		
+		// Generamos el atributo con el/los valor/es
+		String[] values = new String[vals.length];
+		for(int i=0; i<vals.length; i++) values[i] = vals[i].val();
+		generator.genAttrs(attr.val(), values);
+		
 		return true;
 	}
 	

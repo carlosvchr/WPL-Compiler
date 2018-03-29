@@ -66,6 +66,16 @@ public class IOManager {
 		}
 	}
 	
+	/** Escribe una línea en un fichero abierto para escritura */
+	public void putString(String val) {
+		if(pw != null) {
+			lineNumber++;
+			pw.print(val);
+		}else {
+			System.err.println("File opened only for reading");
+		}
+	}
+	
 	/** Devuleve el número de línea del fichero que se está leyendo o escribiendo */
 	public long getLineNumber() {
 		return lineNumber;
