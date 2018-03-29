@@ -24,6 +24,7 @@ public class LexicalAnalyzer {
 	private String line;
 	private int closeStack;		// Pila de CP consecutivos para que emitan uno por llamada
 	private int openedP;		// Permite conocer cuantos OP hay abiertos 
+	private boolean emmitedFinalPC; // Indicador de que se ha emitido el PC de la ultima linea del fichero
 	
 	/** Debido a que el analizador sintáctico va pidiendo al analizador léxico
 	 * los símbolos uno por uno, se requiere un función que procese el fuente
@@ -74,6 +75,7 @@ public class LexicalAnalyzer {
 		}
 		closeStack = 0;
 		openedP = 0;
+		emmitedFinalPC = false;
 	}
 	
 	
@@ -88,7 +90,8 @@ public class LexicalAnalyzer {
 		if(closeStack > 0) {
 			closeStack--;
 			openedP--;
-			return new Symbol(CP, "}");
+			history = new Symbol(CP, "}");
+			return history;
 		}
 		
 		// Si aun queda línea por procesar, no necesitamos leer del fichero
@@ -158,12 +161,22 @@ public class LexicalAnalyzer {
 				String cline = inputFile.getLine();
 				// Comprobamos que queden lineas por leer
 				if(cline == null) {
-					// Si no quedan lineas vamos devolviendo los CP que esten abiertos
+					// Si no quedan lineas devolvemos el PC de la ultima linea
+					if(!emmitedFinalPC) {
+						emmitedFinalPC = true;
+						// Comprobamos que no se haya emitido ya un PC
+						if(history.sym().compareTo(PC) != 0) {
+							history = new Symbol(PC, ";");
+							return history;
+						}
+					}
+					// Y ahora vamos devolviendo los CP que esten abiertos
 					if(openedP > 0) {
 						openedP--;
 						history = new Symbol(CP, "}");
 						return history;
 					}else {
+						history = null;
 						return null;
 					}
 				}
@@ -226,10 +239,9 @@ public class LexicalAnalyzer {
 				return history;
 			}else if(ntabs < tabCont) {
 				// Hacemos una pila para que si hay que devolver mas cierres, se haga en las siguientes llamadas
-				closeStack = (tabCont - ntabs)-1;
+				closeStack = tabCont - ntabs;
 				tabCont = ntabs;
-				history = new Symbol(CP, "}");
-				openedP--;
+				history = new Symbol(PC, ";");	// Devolvemos PC que debe ir antes de CP
 				return history;
 			}else {  // Si es una linea normal
 				// Comprobamos que no se haya emitido ya un PC, que se emita al comienzo o despues de OP, CP o DP

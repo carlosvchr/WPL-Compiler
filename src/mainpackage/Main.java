@@ -9,25 +9,36 @@ import java.io.PrintStream;
 public class Main {
 
 	public static void main(String[] args) {
-		//standardIO2File("/home/carlos/Escritorio/outputwpl.txt");
-		
-		//String path = "/home/carlos/Escritorio/pruebawpl.txt";
 		String path = "/home/carlos/Escritorio/pruebas.txt";
 		
-		//SyntacticAnalyzer syntacticAnalyzer = new SyntacticAnalyzer(path);
-		//syntacticAnalyzer.start();
+		SyntacticAnalyzer syntacticAnalyzer = new SyntacticAnalyzer(path);
+		syntacticAnalyzer.start();
 		
+		testLexical(path);
+	}
+
+	
+	/** Imprime los símbolos generados por el analizador léxico */
+	public static void testLexical(String path) {
 		LexicalAnalyzer la = new LexicalAnalyzer();
 		la.start(path);
 		
 		Symbol s;
 		while((s = la.next()) != null) {	
-				System.out.println(s.sym()+"\t\t"+(s.val()!=null ? s.val():""));
+				System.out.println(s.sym()+putSpaces(20-s.sym().length())+(s.val()!=null ? s.val():""));
 		}
 		
 		System.out.println(REManager.validate("^\\t", "	a"));
 	}
-
+	
+	/** devuelve una cadena de texto compuesta por 'n' espacios */
+	public static String putSpaces(int n) {
+		String ret = "";
+		for(int i=0; i<n; i++) {
+			ret += " ";
+		}
+		return ret;
+	}
 	
 	/** Permite redireccionar la salida de consola a un fichero */
 	public static void standardIO2File(String fileName){

@@ -12,7 +12,6 @@ public class SyntacticAnalyzer {
 	 * 
 	 * */
 	
-	
 	private enum NT {
 	    META, METANR, IMPORTS, IMPORT, DEFINES, DEFINE, TAG, TAGNR, CONTAINER,
 	    ITEMCONTAINER, RADIOGROUP, COMPONENT, INCLUDE, ITEMS, RADIOBUTTONS, 
@@ -37,13 +36,13 @@ public class SyntacticAnalyzer {
 	}
 	
 	/** Muestra un mensaje de error */
-	private void printSyntacticError() {
+	private void printSyntacticError(String s) {
 		lex.undo();
 		Symbol saux = lex.next();
-		System.err.println("Syntactic Analyzer: Error found on line "+lex.getLineNumber()+".: ..."+saux.val()+"("+saux.sym()+")");
+		System.err.println("Syntactic Analyzer: Error found on line "+lex.getLineNumber()+".: ..."+saux.val()+" ("+saux.sym()+"); Expected: "+s);
 	}
 	
-	/** Comprueba si un terminal forma parte de uno de un no terminal */
+	/** Comprueba si un terminal forma parte de los primeros de un no terminal */
 	private boolean belongs(NT nt, String t) {
 		switch (nt){
 		case META:
@@ -93,7 +92,7 @@ public class SyntacticAnalyzer {
 					t.compareTo(Lexer._animation) == 0 || t.compareTo(Lexer._charset) == 0 || 
 					t.compareTo(Lexer._integer) == 0 || t.compareTo(Lexer._real) == 0 || 
 					t.compareTo(Lexer._text) == 0 || t.compareTo(Lexer._definetype) == 0 || 
-					t.compareTo(Lexer._none) == 0 );
+					t.compareTo(Lexer._none) == 0 || t.compareTo(Lexer._measure) == 0);
 		case VAL:
 			return (t.compareTo(Lexer._bool) == 0 || t.compareTo(Lexer._color) == 0 || 
 					t.compareTo(Lexer._font) == 0 || t.compareTo(Lexer._tdecor) == 0 || 
@@ -101,24 +100,35 @@ public class SyntacticAnalyzer {
 					t.compareTo(Lexer._animation) == 0 || t.compareTo(Lexer._charset) == 0 || 
 					t.compareTo(Lexer._integer) == 0 || t.compareTo(Lexer._real) == 0 || 
 					t.compareTo(Lexer._text) == 0 || t.compareTo(Lexer._definetype) == 0 || 
-					t.compareTo(Lexer._none) == 0 );
+					t.compareTo(Lexer._none) == 0 || t.compareTo(Lexer._measure) == 0);
 		default: return false;
 		}
 	}
 	
-	/** <PROGRAM> -> <META> <IMPORTS> <DEFINES> <TAG> */
+	/** <PROGRAM> -> <IMPORTS> <META> <DEFINES> <TAG> */
 	private boolean analyzeProgram() {
 		String sym = lex.next().sym();
 		lex.undo();
+		if(belongs(NT.IMPORTS, sym))
+			analyzeImports();	
 		
-		if(belongs(NT.META, sym)) 		analyzeMeta();	
-		if(belongs(NT.IMPORTS, sym))	analyzeImports();
-		if(belongs(NT.DEFINES, sym))	analyzeDefines();
-		if(belongs(NT.TAG, sym)) 		analyzeTag();
+		sym = lex.next().sym();
+		lex.undo();
+		if(belongs(NT.META, sym))
+			analyzeMeta();
+		
+		sym = lex.next().sym();
+		lex.undo();
+		if(belongs(NT.DEFINES, sym))
+			analyzeDefines();
+		
+		sym = lex.next().sym();
+		lex.undo();
+		if(belongs(NT.TAG, sym))
+			analyzeTag();
 		
 		if(lex.next() != null) {
-			lex.undo();
-			printSyntacticError();
+			printSyntacticError("$ program");
 			return false;
 		}
 		
@@ -132,8 +142,10 @@ public class SyntacticAnalyzer {
 		
 		Symbol s = lex.next();
 		lex.undo();
-		if(belongs(NT.META, s.sym())) {
-			analyzeMeta();
+		if(s != null) {
+			if(belongs(NT.META, s.sym())) {
+				analyzeMeta();
+			}
 		}
 		// Retornamos (en esta etiqueta no importa el valor devuelto porque es anulable)
 		return true;
@@ -143,28 +155,31 @@ public class SyntacticAnalyzer {
 	/** <METANR> -> meta dp <VALS> pc */
 	private boolean analyzeMetaNr() {		
 		if(lex.next().sym().compareTo(Lexer._meta) != 0) {
-			printSyntacticError();
+			printSyntacticError("meta metanr");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
-			printSyntacticError();
+			printSyntacticError("DP metanr");
 			return false;
 		}
 		
-		if(!belongs(NT.VALS, lex.next().sym())) {
-			printSyntacticError();
+		Symbol s = lex.next();
+		if(!belongs(NT.VALS, s.sym())) {
+			printSyntacticError("val metanr");
 			return false;
 		}else {
 			lex.undo();
 			analyzeVals();
 		}
+		s = lex.next();
+		lex.undo();
 		
 		if(lex.next().sym().compareTo(Lexer._pc) != 0) {
-			printSyntacticError();
+			printSyntacticError("PC metanr");
 			return false;
 		}
-		
+
 		return true;
 	}
 	
@@ -176,8 +191,10 @@ public class SyntacticAnalyzer {
 		
 		Symbol s = lex.next();
 		lex.undo();
-		if(belongs(NT.IMPORTS, s.sym())) {
-			analyzeImports();
+		if(s != null) {
+			if(belongs(NT.IMPORTS, s.sym())) {
+				analyzeImports();
+			}
 		}
 		// Retornamos (en esta etiqueta no importa el valor devuelto porque es anulable)
 		return true;
@@ -187,12 +204,13 @@ public class SyntacticAnalyzer {
 	/** <IMPORT> -> import <VALS> pc */
 	private boolean analyzeImport() {	
 		if(lex.next().sym().compareTo(Lexer._import) != 0) {
-			printSyntacticError();
+			printSyntacticError("import import");
 			return false;
 		}
 		
-		if(!belongs(NT.VALS, lex.next().sym())) {
-			printSyntacticError();
+		Symbol s = lex.next();
+		if(!belongs(NT.VALS, s.sym())) {
+			printSyntacticError("val import");
 			return false;
 		}else {
 			lex.undo();
@@ -200,7 +218,7 @@ public class SyntacticAnalyzer {
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._pc) != 0) {
-			printSyntacticError();
+			printSyntacticError("PC import");
 			return false;
 		}
 		
@@ -213,9 +231,13 @@ public class SyntacticAnalyzer {
 		// <DEFINE>
 		analyzeDefine();
 		
-		if(belongs(NT.DEFINES, lex.next().sym())) {
-			lex.undo();
-			analyzeDefines();
+		Symbol s = lex.next();
+		lex.undo();
+		if(s != null) {
+			if(belongs(NT.DEFINES, s.sym())) {
+				lex.undo();
+				analyzeDefines();
+			}
 		}
 		// Retornamos (en esta etiqueta no importa el valor devuelto porque es anulable)
 		return true;
@@ -225,32 +247,33 @@ public class SyntacticAnalyzer {
 	/** <DEFINE> -> define dp op type dp <VALS> pc name dp <VALS> pc content dp <VALS> pc cp */
 	private boolean analyzeDefine() {		
 		if(lex.next().sym().compareTo(Lexer._define) != 0) {
-			printSyntacticError();
+			printSyntacticError("define");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
-			printSyntacticError();
+			printSyntacticError("DP define");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._op) != 0) {
-			printSyntacticError();
+			printSyntacticError("OP define");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._type) != 0) {
-			printSyntacticError();
+			printSyntacticError("type define");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
-			printSyntacticError();
+			printSyntacticError("DP define");
 			return false;
 		}
 		
-		if(!belongs(NT.VALS, lex.next().sym())) {
-			printSyntacticError();
+		Symbol s = lex.next();
+		if(!belongs(NT.VALS, s.sym())) {
+			printSyntacticError("val define");
 			return false;
 		}else {
 			lex.undo();
@@ -258,22 +281,23 @@ public class SyntacticAnalyzer {
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._pc) != 0) {
-			printSyntacticError();
+			printSyntacticError("PC define");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._name) != 0) {
-			printSyntacticError();
+			printSyntacticError("name define");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
-			printSyntacticError();
+			printSyntacticError("DP define");
 			return false;
 		}
 		
-		if(!belongs(NT.VALS, lex.next().sym())) {
-			printSyntacticError();
+		s = lex.next();
+		if(!belongs(NT.VALS, s.sym())) {
+			printSyntacticError("val define");
 			return false;
 		}else {
 			lex.undo();
@@ -281,22 +305,23 @@ public class SyntacticAnalyzer {
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._pc) != 0) {
-			printSyntacticError();
+			printSyntacticError("PC define");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._content) != 0) {
-			printSyntacticError();
+			printSyntacticError("content define");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
-			printSyntacticError();
+			printSyntacticError("DP define");
 			return false;
 		}
 		
-		if(!belongs(NT.VALS, lex.next().sym())) {
-			printSyntacticError();
+		s = lex.next();
+		if(!belongs(NT.VALS, s.sym())) {
+			printSyntacticError("val define");
 			return false;
 		}else {
 			lex.undo();
@@ -304,12 +329,12 @@ public class SyntacticAnalyzer {
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._pc) != 0) {
-			printSyntacticError();
+			printSyntacticError("PC define");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._cp) != 0) {
-			printSyntacticError();
+			printSyntacticError("CP define");
 			return false;
 		}
 		
@@ -319,13 +344,15 @@ public class SyntacticAnalyzer {
 	
 	/** <TAG> -> <TAGNR> <TAG> | $ */
 	private boolean analyzeTag() {
-		// <IMPORT>
+		// <TAGNR>
 		analyzeTagnr();
 		
 		Symbol s = lex.next();
 		lex.undo();
-		if(belongs(NT.TAGNR, s.sym())) {
-			analyzeTag();
+		if(s != null) {
+			if(belongs(NT.TAGNR, s.sym())) {
+				analyzeTag();
+			}
 		}
 		// Retornamos (en esta etiqueta no importa el valor devuelto porque es anulable)
 		return true;
@@ -334,30 +361,43 @@ public class SyntacticAnalyzer {
 	
 	/** <TAGNR>	-> <CONTAINER> | <ITEMCONTAINER> | <RADIOGROUP> | <COMPONENT> | <INCLUDE> */
 	private boolean analyzeTagnr() {
+		
 		Symbol s = lex.next(); 
 		lex.undo();
-		
-		 if(belongs(NT.CONTAINER, s.sym())) {
+		if(belongs(NT.CONTAINER, s.sym())) {
 			analyzeContainer();
+			return true;
 		}
-		 
-		 if(belongs(NT.ITEMCONTAINER, s.sym())) {
+		
+		s = lex.next();
+		lex.undo();
+		if(belongs(NT.ITEMCONTAINER, s.sym())) {
 			analyzeItemcontainer();
+			return true;
 		}
 		 
-		 if(belongs(NT.RADIOGROUP, s.sym())) {
+		s = lex.next();
+		lex.undo();
+		if(belongs(NT.RADIOGROUP, s.sym())) {
 			AnalyzeRadiogroup();
+			return true;
 		}
-	 
-		 if(belongs(NT.COMPONENT, s.sym())) {
+	
+		s = lex.next();
+		lex.undo();
+		if(belongs(NT.COMPONENT, s.sym())) {
 			analyzeComponent();
+			return true;
 		}
 		 
+		s = lex.next();
+		lex.undo();
 		if(belongs(NT.INCLUDE, s.sym())) {
 			analyzeInclude();
+			return true;
 		}
 		 
-		return true;
+		return false;
 	}
 	
 	
@@ -365,17 +405,17 @@ public class SyntacticAnalyzer {
 	private boolean analyzeContainer() {
 		
 		if(lex.next().sym().compareTo(Lexer._container) != 0) {
-			printSyntacticError();
+			printSyntacticError("container container");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
-			printSyntacticError();
+			printSyntacticError("DP container");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._op) != 0) {
-			printSyntacticError();
+			printSyntacticError("OP container");
 			return false;
 		}
 		
@@ -392,7 +432,7 @@ public class SyntacticAnalyzer {
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._cp) != 0) {
-			printSyntacticError();
+			printSyntacticError("CP container");
 			return false;
 		}
 		
@@ -404,26 +444,26 @@ public class SyntacticAnalyzer {
 	private boolean analyzeItemcontainer() {
 		
 		if(lex.next().sym().compareTo(Lexer._itemcont) != 0) {
-			printSyntacticError();
+			printSyntacticError("itemcont itcont");
 			return false;
 		}
-		
+
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
-			printSyntacticError();
+			printSyntacticError("DP itcont");
 			return false;
 		}
-		
+
 		if(lex.next().sym().compareTo(Lexer._op) != 0) {
-			printSyntacticError();
+			printSyntacticError("OP itcont");
 			return false;
 		}
-		
+
 		Symbol s = lex.next();
 		lex.undo();
 		if(belongs(NT.ATTRS, s.sym())) {
 			analyzeAttrs();
 		}
-		
+
 		s = lex.next();
 		lex.undo();
 		if(belongs(NT.ITEMS, s.sym())) {
@@ -431,7 +471,7 @@ public class SyntacticAnalyzer {
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._cp) != 0) {
-			printSyntacticError();
+			printSyntacticError("CP itcont");
 			return false;
 		}
 		
@@ -443,17 +483,17 @@ public class SyntacticAnalyzer {
 	private boolean AnalyzeRadiogroup() {
 
 		if(lex.next().sym().compareTo(Lexer._radiogroup) != 0) {
-			printSyntacticError();
+			printSyntacticError("radiogroup radiogroup");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
-			printSyntacticError();
+			printSyntacticError("DP radiogroup");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._op) != 0) {
-			printSyntacticError();
+			printSyntacticError("OP radiogroup");
 			return false;
 		}
 		
@@ -470,7 +510,7 @@ public class SyntacticAnalyzer {
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._cp) != 0) {
-			printSyntacticError();
+			printSyntacticError("CP radiogroup");
 			return false;
 		}
 		
@@ -480,19 +520,19 @@ public class SyntacticAnalyzer {
 	
 	/** <COMPONENT>	-> component dp op <ATTRS> cp */
 	private boolean analyzeComponent() {
-
-		if(lex.next().sym().compareTo(Lexer._radiogroup) != 0) {
-			printSyntacticError();
+		
+		if(lex.next().sym().compareTo(Lexer._component) != 0) {
+			printSyntacticError("component component");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
-			printSyntacticError();
+			printSyntacticError("DP component");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._op) != 0) {
-			printSyntacticError();
+			printSyntacticError("OP component");
 			return false;
 		}
 		
@@ -501,9 +541,9 @@ public class SyntacticAnalyzer {
 		if(belongs(NT.ATTRS, s.sym())) {
 			analyzeAttrs();
 		}
-		
+
 		if(lex.next().sym().compareTo(Lexer._cp) != 0) {
-			printSyntacticError();
+			printSyntacticError("CP component");
 			return false;
 		}
 		
@@ -514,69 +554,96 @@ public class SyntacticAnalyzer {
 	/** <INCLUDE> -> include <VALS> pc */
 	private boolean analyzeInclude() {
 		
-		if(lex.next().sym().compareTo(Lexer._op) != 0) {
-			printSyntacticError();
+		if(lex.next().sym().compareTo(Lexer._include) != 0) {
+			printSyntacticError("include include");
 			return false;
 		}
 		
-		if(belongs(NT.VALS, lex.next().sym())) {
+		if(lex.next().sym().compareTo(Lexer._op) != 0) {
+			printSyntacticError("OP include");
+			return false;
+		}
+		
+		Symbol s = lex.next();
+		if(belongs(NT.VALS, s.sym())) {
+			lex.undo();
 			analyzeVals();
 		}else {
-			printSyntacticError();
+			printSyntacticError("val include");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._pc) != 0) {
-			printSyntacticError();
+			printSyntacticError("PC include");
 			return false;
 		}
 		
 		return true;
 	}
 	
-	
-	/** <ITEMS> -> item dp op header dp <VALS> pc <TAG> cp */
+	/** <ITEMS> -> <ITEM> <ITEMS> | $ */
 	private boolean analyzeItems() {
+		// <ITEM>
+		analyzeItem();
 		
+		Symbol s = lex.next();
+		lex.undo();
+		if(belongs(NT.ITEMS, s.sym())) {
+			analyzeItems();
+		}
+		// Retornamos (en esta etiqueta no importa el valor devuelto porque es anulable)
+		return true;
+	}
+	
+	/** <ITEM> -> item dp op header dp <VALS> pc <TAG> cp */
+	private boolean analyzeItem() {
+
 		if(lex.next().sym().compareTo(Lexer._item) != 0) {
-			printSyntacticError();
+			printSyntacticError("item item");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
-			printSyntacticError();
+			printSyntacticError("DP item");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._op) != 0) {
-			printSyntacticError();
+			printSyntacticError("OP item");
 			return false;
 		}
 				
 		if(lex.next().sym().compareTo(Lexer._header) != 0) {
-			printSyntacticError();
+			printSyntacticError("header item");
 			return false;
 		}
 		
-		if(belongs(NT.VALS, lex.next().sym())) {
-			analyzeVals();
-		}else {
-			printSyntacticError();
-		}
-		
-		if(lex.next().sym().compareTo(Lexer._pc) != 0) {
-			printSyntacticError();
+		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
+			printSyntacticError("DP item");
 			return false;
 		}
 		
 		Symbol s = lex.next();
-		lex.undo();
-		if(belongs(NT.TAG, s.sym())) {
-			analyzeAttrs();
+		if(belongs(NT.VALS, s.sym())) {
+			lex.undo();
+			analyzeVals();
+		}else {
+			printSyntacticError("val item");
 		}
 		
+		if(lex.next().sym().compareTo(Lexer._pc) != 0) {
+			printSyntacticError("PC item");
+			return false;
+		}
+
+		s = lex.next();
+		lex.undo();
+		if(belongs(NT.TAG, s.sym())) {
+			analyzeTag();
+		}
+
 		if(lex.next().sym().compareTo(Lexer._cp) != 0) {
-			printSyntacticError();
+			printSyntacticError("CP item");
 			return false;
 		}
 				
@@ -603,17 +670,17 @@ public class SyntacticAnalyzer {
 	private boolean analyzeRadiobutton() {
 		
 		if(lex.next().sym().compareTo(Lexer._radiobutton) != 0) {
-			printSyntacticError();
+			printSyntacticError("radiobutton radiobutton");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
-			printSyntacticError();
+			printSyntacticError("DP radiobutton");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._op) != 0) {
-			printSyntacticError();
+			printSyntacticError("OP radiobutton");
 			return false;
 		}
 		
@@ -624,7 +691,7 @@ public class SyntacticAnalyzer {
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._cp) != 0) {
-			printSyntacticError();
+			printSyntacticError("CP radiobutton");
 			return false;
 		}
 		
@@ -636,12 +703,13 @@ public class SyntacticAnalyzer {
 	private boolean analyzeAttrs() {
 		// <ATTR>
 		analyzeAttr();
-		
+
 		Symbol s = lex.next();
 		lex.undo();
 		if(belongs(NT.ATTRS, s.sym())) {
 			analyzeAttrs();
 		}
+
 		// Retornamos (en esta etiqueta no importa el valor devuelto porque es anulable)
 		return true;
 	}
@@ -651,23 +719,25 @@ public class SyntacticAnalyzer {
 	private boolean analyzeAttr() {
 		
 		if(lex.next().sym().compareTo(Lexer._attr) != 0) {
-			printSyntacticError();
+			printSyntacticError("attr attr");
 			return false;
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
-			printSyntacticError();
+			printSyntacticError("DP attr");
 			return false;
 		}
 		
-		if(belongs(NT.VALS, lex.next().sym())) {
+		Symbol s = lex.next();
+		if(belongs(NT.VALS, s.sym())) {
+			lex.undo();
 			analyzeVals();
 		}else {
-			printSyntacticError();
+			printSyntacticError("val attr");
 		}
-		
+
 		if(lex.next().sym().compareTo(Lexer._pc) != 0) {
-			printSyntacticError();
+			printSyntacticError("PC attr");
 			return false;
 		}
 		return true;
@@ -681,9 +751,10 @@ public class SyntacticAnalyzer {
 		
 		while(lex.next().sym().compareTo(Lexer._coma) == 0) {
 			if(!belongs(NT.VAL, lex.next().sym())) {
-				printSyntacticError();
+				printSyntacticError("val vals");
 			}
 		}
+		lex.undo();
 		
 		return true;
 	}
@@ -692,18 +763,27 @@ public class SyntacticAnalyzer {
 	/** <VAL> */
 	private boolean analyzeVal() {
 		
-		if(lex.next().sym().compareTo(Lexer._bool) != 0 && lex.next().sym().compareTo(Lexer._color) != 0 &&
-				lex.next().sym().compareTo(Lexer._font) != 0 && lex.next().sym().compareTo(Lexer._tdecor) != 0 &&
-				lex.next().sym().compareTo(Lexer._align) != 0 && lex.next().sym().compareTo(Lexer._effect) != 0 &&
-				lex.next().sym().compareTo(Lexer._animation) != 0 && lex.next().sym().compareTo(Lexer._charset) != 0 &&
-				lex.next().sym().compareTo(Lexer._integer) != 0 && lex.next().sym().compareTo(Lexer._real) != 0 &&
-				lex.next().sym().compareTo(Lexer._text) != 0 && lex.next().sym().compareTo(Lexer._definetype) != 0 &&
-				lex.next().sym().compareTo(Lexer._none) != 0 && lex.next().sym().compareTo(Lexer._measure) != 0) {
-			printSyntacticError();
+		String s = lex.next().sym();
+		if(s.compareTo(Lexer._bool) != 0 && s.compareTo(Lexer._color) != 0 &&
+				s.compareTo(Lexer._font) != 0 && s.compareTo(Lexer._tdecor) != 0 &&
+				s.compareTo(Lexer._align) != 0 && s.compareTo(Lexer._effect) != 0 &&
+				s.compareTo(Lexer._animation) != 0 && s.compareTo(Lexer._charset) != 0 &&
+				s.compareTo(Lexer._integer) != 0 && s.compareTo(Lexer._real) != 0 &&
+				s.compareTo(Lexer._text) != 0 && s.compareTo(Lexer._definetype) != 0 &&
+				s.compareTo(Lexer._none) != 0 && s.compareTo(Lexer._measure) != 0) {
+			printSyntacticError("val val");
 			return false;
 		}
 		
 		return true;
+	}
+	
+	public void print(String s) {
+		System.out.println(s);
+	}
+	
+	public void print(Symbol s) {
+		System.out.println(s.sym() + " .. " + s.val());
 	}
 	
 }
