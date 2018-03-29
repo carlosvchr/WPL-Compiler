@@ -27,4 +27,9 @@ public class Symbol {
 		return this.value;
 	}
 	
+	/** Modifica el valor del símbolo */
+	public void setVal(String v) {
+		this.value = v;
+	}
+	
 }

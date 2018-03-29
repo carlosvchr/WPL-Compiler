@@ -10,11 +10,12 @@ public class Main {
 
 	public static void main(String[] args) {
 		String path = "/home/carlos/Escritorio/pruebas.txt";
+		String output = "/home/carlos/Escritorio/pruebasOutput.html";
 		
-		SyntacticAnalyzer syntacticAnalyzer = new SyntacticAnalyzer(path);
+		SyntacticAnalyzer syntacticAnalyzer = new SyntacticAnalyzer(path, output);
 		syntacticAnalyzer.start();
 		
-		testLexical(path);
+		//testLexical(path);
 	}
 
 	

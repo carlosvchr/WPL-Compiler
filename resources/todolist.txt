@@ -3,9 +3,3 @@ TODO LIST
 1. Arreglar los breakLines en el analizador lexico. Esta bien que los brakes solo se hagan con texto.
 Pero se debe controlar los espacios antes y despues del simbolo BR
 
-
-
-
-ULTIMOS CAMBIOS
-SA : arreglado un error en el metodo analyzeComponent
-SA : arreglado metodo analyzeVal

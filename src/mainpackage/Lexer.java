@@ -2,50 +2,58 @@ package mainpackage;
 
 public class Lexer {
 	
-	public static String symComment = "#";
-	public static String _comment = "comment";
-	public static String _dp = "dp";
-	public static String _op = "op";
-	public static String _cp = "cp";
-	public static String _pc = "pc";
-	public static String _br = "br";
-	public static String _nl = "nl";
-	public static String _id = "id";
-	public static String _coma = "coma";
-	public static String _tab = "tab";
-	public static String _s = "s";
-	public static String _measure = "measure";
-	public static String _meta = "meta";
-	public static String _header = "header";
-	public static String _import = "import";
-	public static String _define = "define";
-	public static String _include = "include";
-	public static String _type = "type";
-	public static String _name = "name";
-	public static String _content = "content";
-	public static String _container = "container";
-	public static String _itemcont = "itemcont";
-	public static String _radiogroup = "radiogroup";
-	public static String _radiobutton = "radiobutton";
-	public static String _component = "component";
-	public static String _item = "item";
-	public static String _attr = "attr";
-	public static String _bool = "bool";
-	public static String _color = "color";
-	public static String _font = "font";
-	public static String _tdecor = "tdecor";
-	public static String _align = "align";
-	public static String _effect = "effect";
-	public static String _animation = "animation";
-	public static String _charset = "charset";
-	public static String _text = "text";
-	public static String _integer = "integer";
-	public static String _real = "real";
-	public static String _definetype = "definetype";
-	public static String _indicators = "indicators";
-	public static String _slidecontrols = "slidecontrols";
-	public static String _none = "none";
+	public static final String symComment = "#";
+	public static final String _comment = "comment";
+	public static final String _dp = "dp";
+	public static final String _op = "op";
+	public static final String _cp = "cp";
+	public static final String _pc = "pc";
+	public static final String _br = "br";
+	public static final String _nl = "nl";
+	public static final String _id = "id";
+	public static final String _coma = "coma";
+	public static final String _tab = "tab";
+	public static final String _s = "s";
+	public static final String _measure = "measure";
+	public static final String _meta = "meta";
+	public static final String _header = "header";
+	public static final String _import = "import";
+	public static final String _define = "define";
+	public static final String _include = "include";
+	public static final String _type = "type";
+	public static final String _name = "name";
+	public static final String _content = "content";
+	public static final String _container = "container";
+	public static final String _itemcont = "itemcont";
+	public static final String _radiogroup = "radiogroup";
+	public static final String _radiobutton = "radiobutton";
+	public static final String _component = "component";
+	public static final String _item = "item";
+	public static final String _attr = "attr";
+	public static final String _bool = "bool";
+	public static final String _color = "color";
+	public static final String _font = "font";
+	public static final String _tdecor = "tdecor";
+	public static final String _align = "align";
+	public static final String _effect = "effect";
+	public static final String _animation = "animation";
+	public static final String _charset = "charset";
+	public static final String _text = "text";
+	public static final String _integer = "integer";
+	public static final String _real = "real";
+	public static final String _definetype = "definetype";
+	public static final String _indicators = "indicators";
+	public static final String _slidecontrols = "slidecontrols";
+	public static final String _none = "none";
 
+	public static final String _author = "author";
+	public static final String _keywords = "keywords";
+	public static final String _lang = "lang";
+	public static final String _redirect = "redirect";
+	public static final String _pageicon = "pageicon";
+	public static final String _title = "title";
+	public static final String _description = "description";
+	
 
 	public static String[][] lexer = {
 			{_comment,			"^(#.*)"},
@@ -59,7 +67,8 @@ public class Lexer {
 			{_tab,				"^(\\s{4})"},
 			{_s,				"\\s{1}"},
 			{_measure,			"^((0|[1-9][0-9]*)((px)|(%)))"},
-			{_meta,				"^((author)|(keywords)|(lang)|(redirect)|(pageicon)|(title)|(charset)|(description))"},
+			{_meta,				"^(("+_author+")|("+_keywords+")|("+_lang+")|("+_redirect+")|("+_pageicon+")|"+
+									"("+_title+")|("+_charset+")|("+_description+"))"},
 			{_import,			"^import"},
 			{_define,			"^define"},
 			{_include,			"^include"},

@@ -1,5 +1,6 @@
 package mainpackage;
 
+import java.util.ArrayList;
 import java.util.Stack;
 
 public class SyntacticAnalyzer {
@@ -21,11 +22,19 @@ public class SyntacticAnalyzer {
 	// Analizador léxico al que iremos requiriendo símbolos
 	LexicalAnalyzer lex = null;
 	
+	// Analizador semantico que comprobara que los valores asociados a los atributos son correctos
+	SemanticAnalyzer sem = null;
+	
+	// CodeGenerator es la clase que genera el código
+	CodeGenerator generator = null;
+	
 	// Pila donde registramos las etiquetas abiertas para cerrarlas cuando llegue un cp
 	Stack<String> openedTagsStack;
 	
 	/** @param Fichero fuente */
-	public SyntacticAnalyzer(String path) {
+	public SyntacticAnalyzer(String path, String output) {
+		generator = new CodeGenerator(output);
+		sem = new SemanticAnalyzer();
 		lex = new LexicalAnalyzer();
 		lex.start(path);
 	}
@@ -107,6 +116,10 @@ public class SyntacticAnalyzer {
 	
 	/** <PROGRAM> -> <IMPORTS> <META> <DEFINES> <TAG> */
 	private boolean analyzeProgram() {
+		
+		// Genera las etiquetas de apertura html
+		generator.startHead();
+		
 		String sym = lex.next().sym();
 		lex.undo();
 		if(belongs(NT.IMPORTS, sym))
@@ -122,6 +135,9 @@ public class SyntacticAnalyzer {
 		if(belongs(NT.DEFINES, sym))
 			analyzeDefines();
 		
+		// Genera la etiqueta de cierre del head y apertura del body
+		generator.startBody();
+		
 		sym = lex.next().sym();
 		lex.undo();
 		if(belongs(NT.TAG, sym))
@@ -131,6 +147,9 @@ public class SyntacticAnalyzer {
 			printSyntacticError("$ program");
 			return false;
 		}
+		
+		// Genera las etiquetas de cierre html
+		generator.end();
 		
 		return true;
 	}
@@ -154,7 +173,8 @@ public class SyntacticAnalyzer {
 	
 	/** <METANR> -> meta dp <VALS> pc */
 	private boolean analyzeMetaNr() {		
-		if(lex.next().sym().compareTo(Lexer._meta) != 0) {
+		Symbol metaSym = lex.next();
+		if(metaSym.sym().compareTo(Lexer._meta) != 0) {
 			printSyntacticError("meta metanr");
 			return false;
 		}
@@ -170,7 +190,13 @@ public class SyntacticAnalyzer {
 			return false;
 		}else {
 			lex.undo();
-			analyzeVals();
+			Symbol[] r = analyzeVals();			
+			// Si no hay errores semanticos generamos el codigo
+			if(sem.validate(metaSym, r)) {
+				// Enviamos el valor del atributo meta con el valor del texto asociado
+				String[] smeta = {metaSym.val(), r[0].val()};
+				generator.genMetadata(smeta);
+			}
 		}
 		s = lex.next();
 		lex.undo();
@@ -203,7 +229,8 @@ public class SyntacticAnalyzer {
 	
 	/** <IMPORT> -> import <VALS> pc */
 	private boolean analyzeImport() {	
-		if(lex.next().sym().compareTo(Lexer._import) != 0) {
+		Symbol importSym = lex.next();
+		if(importSym.sym().compareTo(Lexer._import) != 0) {
 			printSyntacticError("import import");
 			return false;
 		}
@@ -214,7 +241,11 @@ public class SyntacticAnalyzer {
 			return false;
 		}else {
 			lex.undo();
-			analyzeVals();
+			Symbol[] r = analyzeVals();
+			// Si no hay errores semanticos generamos el codigo
+			if(sem.validate(importSym, r)) {
+				generator.genImport(r[0].val());
+			}
 		}
 		
 		if(lex.next().sym().compareTo(Lexer._pc) != 0) {
@@ -745,9 +776,10 @@ public class SyntacticAnalyzer {
 	
 	
 	/** <VALS> -> <VAL> | <VAL> coma <VALS> */
-	private boolean analyzeVals() {
+	private Symbol[] analyzeVals() {
+		ArrayList<Symbol> values = new ArrayList<>();
 		
-		analyzeVal();
+		values.add(analyzeVal());
 		
 		while(lex.next().sym().compareTo(Lexer._coma) == 0) {
 			if(!belongs(NT.VAL, lex.next().sym())) {
@@ -756,26 +788,26 @@ public class SyntacticAnalyzer {
 		}
 		lex.undo();
 		
-		return true;
+		return values.toArray(new Symbol[values.size()]);
 	}
 	
 	
 	/** <VAL> */
-	private boolean analyzeVal() {
+	private Symbol analyzeVal() {
 		
-		String s = lex.next().sym();
-		if(s.compareTo(Lexer._bool) != 0 && s.compareTo(Lexer._color) != 0 &&
-				s.compareTo(Lexer._font) != 0 && s.compareTo(Lexer._tdecor) != 0 &&
-				s.compareTo(Lexer._align) != 0 && s.compareTo(Lexer._effect) != 0 &&
-				s.compareTo(Lexer._animation) != 0 && s.compareTo(Lexer._charset) != 0 &&
-				s.compareTo(Lexer._integer) != 0 && s.compareTo(Lexer._real) != 0 &&
-				s.compareTo(Lexer._text) != 0 && s.compareTo(Lexer._definetype) != 0 &&
-				s.compareTo(Lexer._none) != 0 && s.compareTo(Lexer._measure) != 0) {
+		Symbol s = lex.next();
+		if(s.sym().compareTo(Lexer._bool) != 0 && s.sym().compareTo(Lexer._color) != 0 &&
+				s.sym().compareTo(Lexer._font) != 0 && s.sym().compareTo(Lexer._tdecor) != 0 &&
+				s.sym().compareTo(Lexer._align) != 0 && s.sym().compareTo(Lexer._effect) != 0 &&
+				s.sym().compareTo(Lexer._animation) != 0 && s.sym().compareTo(Lexer._charset) != 0 &&
+				s.sym().compareTo(Lexer._integer) != 0 && s.sym().compareTo(Lexer._real) != 0 &&
+				s.sym().compareTo(Lexer._text) != 0 && s.sym().compareTo(Lexer._definetype) != 0 &&
+				s.sym().compareTo(Lexer._none) != 0 && s.sym().compareTo(Lexer._measure) != 0) {
 			printSyntacticError("val val");
-			return false;
+			return null;
 		}
 		
-		return true;
+		return s;
 	}
 	
 	public void print(String s) {
