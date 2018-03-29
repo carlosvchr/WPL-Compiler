@@ -8,12 +8,16 @@ public class CodeGenerator {
 	String path;
 	int openedTags;
 	
+	// Este atributo almacena la linea del tag hasta que se complete, entonces se emite
+	String currentLine;
+	
 	/** Proceso: startHead() -> genMetadata()* -> genImports()* -> startBody() -> generate()* -> end() */
 	
 	public CodeGenerator(String path) {
 		this.path = path;
 		output = new IOManager();
 		openedTags = 0;
+		currentLine = "";
 	}
 	
 	public void startHead() {
@@ -76,22 +80,85 @@ public class CodeGenerator {
 	
 	/** Aquí se generan todas las sentencias del body */
 	public void openTag(String tag) {
-		output.putString(tabs()+"<"+tag+" ");
+		switch(tag) {
+		case Lexer._box:
+			currentLine = tabs()+"<div ";
+			break;
+		case Lexer._hbox:
+			currentLine = tabs()+"<div ";
+			break;
+		case Lexer._vbox:
+			currentLine = tabs()+"<div ";
+			break;
+		case Lexer._sidebox:
+			currentLine = tabs()+"<div class=\"w3-sidebar w3-bar-block\" ";
+			break;
+		case Lexer._modalbox:
+			currentLine = tabs()+"<div class=\"w3-modal\"><div class=\"w3-modal-container\" ";
+			break;
+		case Lexer._tablebox:
+			currentLine = tabs()+"<table ";
+			break;
+		case Lexer._dropdownbox:
+			currentLine = tabs()+"<div class=\"w3-dropdown-click\"";
+			break;
+		case Lexer._tabbedbox:
+			currentLine = tabs()+"<div ";
+			break;
+		case Lexer._accordionbox:
+			currentLine = tabs()+"<div ";
+			break;
+		case Lexer._slideshow:
+			currentLine = tabs()+"<div ";
+			break;
+		case Lexer._radiogroup:
+			currentLine = tabs()+"<div ";
+			break;
+		case Lexer._radiobutton:
+			currentLine = tabs()+"<input class=\"w3-radio\" type=\"radio\" ";
+			break;
+		case Lexer._button:
+			currentLine = tabs()+"<button ";
+			break;
+		case Lexer._image:
+			currentLine = tabs()+"<img ";
+			break;
+		case Lexer._video:
+			currentLine = tabs()+"<video ";
+			break;
+		case Lexer._audio:
+			currentLine = tabs()+"<audio ";
+			break;
+		case Lexer._textfield:
+			currentLine = tabs()+"<input class=\"w3-input\" type=\"text\" ";
+			break;
+		case Lexer._checkbox:
+			currentLine = tabs()+"<input class=\"w3-check\" type=\"checkbox\" ";
+			break;
+		case Lexer._label:
+			currentLine = tabs()+"<div ";
+			break;
+		case Lexer._progressbar:
+			currentLine = tabs()+"<div ";
+			break;
+		case Lexer._item:
+			currentLine = tabs()+"<div ";
+			break;
+		}
 	}
 	
 	/** Escribe los atributos de las etiquetas */
 	public void genAttrs(String attr, String[] values) {
-		output.putString(attr+"=\"");
 		
 		// Los atributos de style deben ir dentro de la etiqueta style, el resto no
-		output.putString(values[0]);	/// ESTO HAY QUE BORRARLO
+		//addClass(attr+"=\""+values[0]);
+		//addStyle("");
 		
-		output.putString("\" ");
 	}
 	
 	/** Termina de escribir la etiqueta de apertura para proceder al contenido */
 	public void finishOpenTag() {
-		output.putString(">\n");
+		output.putString(currentLine+">\n");
 		openedTags ++;
 	}
 	
@@ -136,6 +203,33 @@ public class CodeGenerator {
 			s += "    ";
 		}
 		return s;
+	}
+	
+	/** Introduce un atributo dentro del atributo class */
+	public void addClass(String attr) {
+		// Comprobamos que se haya declarado el atributo class y, si no, lo creamos
+		if(!currentLine.contains("class=\"")) {
+			currentLine = currentLine.substring(0, currentLine.length()-1) + " class=\"" + attr + "\">";
+		}else {	
+			String[] sp = currentLine.split("class=\"");
+			if(sp.length == 2) {
+				currentLine = sp[0] + "class=\"" + attr + " " + sp[1];
+			}
+		}
+		
+	}
+	
+	/** Introduce un atributo dentro del atributo style */
+	public void addStyle(String attr) {
+		// Comprobamos que se haya declarado el atributo style y, si no, lo creamos
+		if(!currentLine.contains("class=\"")) {
+			currentLine = currentLine.substring(0, currentLine.length()-1) + " style=\"" + attr + ";\">";
+		}else {	
+			String[] sp = currentLine.split("style=\"");
+			if(sp.length == 2) {
+				currentLine = sp[0] + "style=\"" + attr + "; " + sp[1];
+			}
+		}
 	}
 	
 	
