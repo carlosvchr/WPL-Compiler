@@ -17,7 +17,7 @@ public class SyntacticAnalyzer {
 	 * <IMPORT>				-> import <VALS> pc
 	 *
 	 * <DEFINES>			-> <DEFINE> <DEFINES> | $
-	 * <DEFINE>				-> define dp op type dp <VALS> pc name dp <VALS> pc content dp <VALS> pc cp
+	 * <DEFINE>				-> define dp op name dp <VALS> pc content dp <VALS> pc cp
 	 *
 	 * <TAG>				-> <TAGNR> <TAG> | $
 	 * <TAGNR>				-> <CONTAINER> | <ITEMCONTAINER> | <RADIOGROUP> | <COMPONENT> | <INCLUDE>
@@ -67,13 +67,13 @@ public class SyntacticAnalyzer {
 	CodeGenerator generator = null;
 	
 	// Pila donde registramos las etiquetas abiertas para cerrarlas cuando llegue un cp
-	Deque<Symbol> openedTagsStack;
+	ArrayDeque<Symbol> openedTagsStack;
 	
 	
 	/** @param Fichero fuente 
 	 *  @param Fichero donde se genera el código */
 	public SyntacticAnalyzer(String path, String output) {
-		generator = new CodeGenerator(output);
+		generator = new CodeGenerator(output, openedTagsStack);
 		sem = new SemanticAnalyzer();
 		lex = new LexicalAnalyzer();
 		lex.start(path);
@@ -141,16 +141,16 @@ public class SyntacticAnalyzer {
 					t.compareTo(Lexer._align) == 0 || t.compareTo(Lexer._effect) == 0 || 
 					t.compareTo(Lexer._animation) == 0 || t.compareTo(Lexer._charset) == 0 || 
 					t.compareTo(Lexer._integer) == 0 || t.compareTo(Lexer._real) == 0 || 
-					t.compareTo(Lexer._text) == 0 || t.compareTo(Lexer._definetype) == 0 || 
-					t.compareTo(Lexer._none) == 0 || t.compareTo(Lexer._measure) == 0);
+					t.compareTo(Lexer._text) == 0 || t.compareTo(Lexer._none) == 0 || 
+					t.compareTo(Lexer._measure) == 0);
 		case VAL:
 			return (t.compareTo(Lexer._bool) == 0 || t.compareTo(Lexer._color) == 0 || 
 					t.compareTo(Lexer._font) == 0 || t.compareTo(Lexer._tdecor) == 0 || 
 					t.compareTo(Lexer._align) == 0 || t.compareTo(Lexer._effect) == 0 || 
 					t.compareTo(Lexer._animation) == 0 || t.compareTo(Lexer._charset) == 0 || 
 					t.compareTo(Lexer._integer) == 0 || t.compareTo(Lexer._real) == 0 || 
-					t.compareTo(Lexer._text) == 0 || t.compareTo(Lexer._definetype) == 0 || 
-					t.compareTo(Lexer._none) == 0 || t.compareTo(Lexer._measure) == 0);
+					t.compareTo(Lexer._text) == 0 || t.compareTo(Lexer._none) == 0 || 
+					t.compareTo(Lexer._measure) == 0);
 		default: return false;
 		}
 	}
@@ -316,7 +316,7 @@ public class SyntacticAnalyzer {
 	}
 	
 	
-	/** <DEFINE> -> define dp op type dp <VALS> pc name dp <VALS> pc content dp <VALS> pc cp */
+	/** <DEFINE> -> define dp op name dp <VALS> pc content dp <VALS> pc cp */
 	private boolean analyzeDefine() {		
 		if(lex.next().sym().compareTo(Lexer._define) != 0) {
 			printSyntacticError("define");
@@ -333,30 +333,6 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		if(lex.next().sym().compareTo(Lexer._type) != 0) {
-			printSyntacticError("type define");
-			return false;
-		}
-		
-		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
-			printSyntacticError("DP define");
-			return false;
-		}
-		
-		Symbol s = lex.next();
-		if(!belongs(NT.VALS, s.sym())) {
-			printSyntacticError("val define");
-			return false;
-		}else {
-			lex.undo();
-			analyzeVals();
-		}
-		
-		if(lex.next().sym().compareTo(Lexer._pc) != 0) {
-			printSyntacticError("PC define");
-			return false;
-		}
-		
 		if(lex.next().sym().compareTo(Lexer._name) != 0) {
 			printSyntacticError("name define");
 			return false;
@@ -367,7 +343,7 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		s = lex.next();
+		Symbol s = lex.next();
 		if(!belongs(NT.VALS, s.sym())) {
 			printSyntacticError("val define");
 			return false;
@@ -905,8 +881,8 @@ public class SyntacticAnalyzer {
 				s.sym().compareTo(Lexer._align) != 0 && s.sym().compareTo(Lexer._effect) != 0 &&
 				s.sym().compareTo(Lexer._animation) != 0 && s.sym().compareTo(Lexer._charset) != 0 &&
 				s.sym().compareTo(Lexer._integer) != 0 && s.sym().compareTo(Lexer._real) != 0 &&
-				s.sym().compareTo(Lexer._text) != 0 && s.sym().compareTo(Lexer._definetype) != 0 &&
-				s.sym().compareTo(Lexer._none) != 0 && s.sym().compareTo(Lexer._measure) != 0) {
+				s.sym().compareTo(Lexer._text) != 0 && s.sym().compareTo(Lexer._none) != 0 && 
+				s.sym().compareTo(Lexer._measure) != 0) {
 			printSyntacticError("val val");
 			return null;
 		}

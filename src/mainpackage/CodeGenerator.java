@@ -1,20 +1,26 @@
 package mainpackage;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class CodeGenerator {
 
 	IOManager output;
 	String path;
 	int openedTags;
+	int radiogroups = 0;
+	
+	Deque<Symbol> containerStack;
 	
 	// Este atributo almacena la linea del tag hasta que se complete, entonces se emite
 	String currentLine;
 	
 	/** Proceso: startHead() -> genMetadata()* -> genImports()* -> startBody() -> generate()* -> end() */
 	
-	public CodeGenerator(String path) {
+	public CodeGenerator(String path, ArrayDeque<Symbol> ad) {
 		this.path = path;
+		this.containerStack = ad;
 		output = new IOManager();
 		openedTags = 0;
 		currentLine = "";
@@ -23,6 +29,8 @@ public class CodeGenerator {
 	public void startHead() {
 		output.openForWrite(path);
 		output.putLine("<!Doctype html>\n<html>\n<head>");
+		output.putLine("\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+		output.putLine("\t<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">");
 		openedTags = 1;
 	}
 	
@@ -80,9 +88,16 @@ public class CodeGenerator {
 	
 	/** Aquí se generan todas las sentencias del body */
 	public void openTag(String tag) {
+		String inheritedAttrs = "";
+		
+		// Si este nuevo elemento se crea dentro de un hbox...
+		if(containerStack.peekLast().val().compareTo(Lexer._hbox) == 0) {
+			inheritedAttrs += " w3-cell";
+		}
+		
 		switch(tag) {
 		case Lexer._box:
-			currentLine = tabs()+"<div ";
+			currentLine = tabs()+"<div class=\"w3-display-container\" ";
 			break;
 		case Lexer._hbox:
 			currentLine = tabs()+"<div ";
@@ -100,7 +115,7 @@ public class CodeGenerator {
 			currentLine = tabs()+"<table ";
 			break;
 		case Lexer._dropdownbox:
-			currentLine = tabs()+"<div class=\"w3-dropdown-click\"";
+			currentLine = tabs()+"<div class=\"w3-dropdown-click\" ";
 			break;
 		case Lexer._tabbedbox:
 			currentLine = tabs()+"<div ";
@@ -113,12 +128,13 @@ public class CodeGenerator {
 			break;
 		case Lexer._radiogroup:
 			currentLine = tabs()+"<div ";
+			radiogroups++;
 			break;
 		case Lexer._radiobutton:
-			currentLine = tabs()+"<input class=\"w3-radio\" type=\"radio\" ";
+			currentLine = tabs()+"<input class=\"w3-radio\" type=\"radio\" name=\"rg-"+radiogroups+"\" ";
 			break;
 		case Lexer._button:
-			currentLine = tabs()+"<button ";
+			currentLine = tabs()+"<button class=\"w3-button\" ";
 			break;
 		case Lexer._image:
 			currentLine = tabs()+"<img ";
@@ -170,7 +186,71 @@ public class CodeGenerator {
 	/** Cierra la etiqueta abierta */
 	public void closeTag(String tag) {
 		openedTags--;
-		output.putLine(tabs()+"</"+tag+">");
+		switch(tag) {
+		case Lexer._box:
+			output.putLine(tabs()+"</div>");
+			break;
+		case Lexer._hbox:
+			output.putLine(tabs()+"</div>");
+			break;
+		case Lexer._vbox:
+			output.putLine(tabs()+"</div>");
+			break;
+		case Lexer._sidebox:
+			output.putLine(tabs()+"</div>");
+			break;
+		case Lexer._modalbox:
+			output.putLine(tabs()+"</div>");
+			break;
+		case Lexer._tablebox:
+			output.putLine(tabs()+"</table>");
+			break;
+		case Lexer._dropdownbox:
+			output.putLine(tabs()+"</div>");
+			break;
+		case Lexer._tabbedbox:
+			output.putLine(tabs()+"</div>");
+			break;
+		case Lexer._accordionbox:
+			output.putLine(tabs()+"</div>");
+			break;
+		case Lexer._slideshow:
+			output.putLine(tabs()+"</div>");
+			break;
+		case Lexer._radiogroup:
+			output.putLine(tabs()+"</div>");
+			break;
+		case Lexer._radiobutton:
+			output.putLine(tabs()+"</input>");
+			break;
+		case Lexer._button:
+			output.putLine(tabs()+"</button>");
+			break;
+		case Lexer._image:
+			output.putLine(tabs()+"</img>");
+			break;
+		case Lexer._video:
+			output.putLine(tabs()+"</video>");
+			break;
+		case Lexer._audio:
+			output.putLine(tabs()+"</audio>");
+			break;
+		case Lexer._textfield:
+			output.putLine(tabs()+"</input>");
+			break;
+		case Lexer._checkbox:
+			output.putLine(tabs()+"</input>");
+			break;
+		case Lexer._label:
+			output.putLine(tabs()+"</div>");
+			break;
+		case Lexer._progressbar:
+			output.putLine(tabs()+"</div>");
+			break;
+		case Lexer._item:
+			output.putLine(tabs()+"</div>");
+			break;
+		}
 	}
 	
 	
@@ -230,6 +310,13 @@ public class CodeGenerator {
 				currentLine = sp[0] + "style=\"" + attr + "; " + sp[1];
 			}
 		}
+	}
+	
+	
+	/** Agrega una hiperenlace a la etiqueta */
+	public void addLink(String url) {
+		currentLine = "<a href=\""+url+"\">" + currentLine;
+		// registrar que la etiqueta tiene hiper enlace para cerrarla luego
 	}
 	
 	
