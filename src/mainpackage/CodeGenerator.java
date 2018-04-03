@@ -97,53 +97,53 @@ public class CodeGenerator {
 		
 		switch(tag) {
 		case Lexer._box:
-			currentLine = tabs()+"<div class=\"w3-display-container\" ";
+			currentLine = tabs()+"<div class=\"w3-display-container\"";
 			break;
 		case Lexer._hbox:
-			currentLine = tabs()+"<div ";
+			currentLine = tabs()+"<div";
 			break;
 		case Lexer._vbox:
-			currentLine = tabs()+"<div ";
+			currentLine = tabs()+"<div";
 			break;
 		case Lexer._sidebox:
-			currentLine = tabs()+"<div class=\"w3-sidebar w3-bar-block\" ";
+			currentLine = tabs()+"<div class=\"w3-sidebar w3-bar-block\"";
 			break;
 		case Lexer._modalbox:
-			currentLine = tabs()+"<div class=\"w3-modal\"><div class=\"w3-modal-container\" ";
+			currentLine = tabs()+"<div class=\"w3-modal\"><div class=\"w3-modal-container\"";
 			break;
 		case Lexer._tablebox:
 			currentLine = tabs()+"<table ";
 			break;
 		case Lexer._dropdownbox:
-			currentLine = tabs()+"<div class=\"w3-dropdown-click\" ";
+			currentLine = tabs()+"<div class=\"w3-dropdown-click\"";
 			break;
 		case Lexer._tabbedbox:
-			currentLine = tabs()+"<div ";
+			currentLine = tabs()+"<div";
 			break;
 		case Lexer._accordionbox:
-			currentLine = tabs()+"<div ";
+			currentLine = tabs()+"<div";
 			break;
 		case Lexer._slideshow:
-			currentLine = tabs()+"<div ";
+			currentLine = tabs()+"<div";
 			break;
 		case Lexer._radiogroup:
-			currentLine = tabs()+"<div ";
+			currentLine = tabs()+"<div";
 			radiogroups++;
 			break;
 		case Lexer._radiobutton:
-			currentLine = tabs()+"<input class=\"w3-radio\" type=\"radio\" name=\"rg-"+radiogroups+"\" ";
+			currentLine = tabs()+"<input class=\"w3-radio\" type=\"radio\" name=\"rg-"+radiogroups+"\"";
 			break;
 		case Lexer._button:
-			currentLine = tabs()+"<button class=\"w3-button\" ";
+			currentLine = tabs()+"<button class=\"w3-button\"";
 			break;
 		case Lexer._image:
-			currentLine = tabs()+"<img ";
+			currentLine = tabs()+"<img";
 			break;
 		case Lexer._video:
-			currentLine = tabs()+"<video ";
+			currentLine = tabs()+"<video";
 			break;
 		case Lexer._audio:
-			currentLine = tabs()+"<audio ";
+			currentLine = tabs()+"<audio";
 			break;
 		case Lexer._textfield:
 			currentLine = tabs()+"<input class=\"w3-input\" type=\"text\" ";
@@ -152,24 +152,113 @@ public class CodeGenerator {
 			currentLine = tabs()+"<input class=\"w3-check\" type=\"checkbox\" ";
 			break;
 		case Lexer._label:
-			currentLine = tabs()+"<div ";
+			currentLine = tabs()+"<div";
 			break;
 		case Lexer._progressbar:
-			currentLine = tabs()+"<div ";
+			currentLine = tabs()+"<div";
 			break;
 		case Lexer._item:
-			currentLine = tabs()+"<div ";
+			currentLine = tabs()+"<div";
 			break;
 		}
 	}
 	
 	/** Escribe los atributos de las etiquetas */
 	public void genAttrs(String attr, String[] values) {
-		
-		// Los atributos de style deben ir dentro de la etiqueta style, el resto no
-		//addClass(attr+"=\""+values[0]);
-		//addStyle("");
-		
+		for(int i=0; i<values.length; i++) {
+			values[i] = clean(values[i]);
+		}
+		switch(attr) {
+		case Lexer._alt:
+			currentLine += " alt="+values[0];
+			break;
+		case Lexer._poster:
+			currentLine += " poster="+values[0];
+			break;
+		case Lexer._src:
+			currentLine += " src="+values[0];
+			break;
+		case Lexer._autoplay:
+			if(values[0].compareTo(Lexer._true) == 0) currentLine += " autoplay";
+			break;
+		case Lexer._controls:
+			if(values[0].compareTo(Lexer._true) == 0) currentLine += " controls";
+			break;
+		case Lexer._loop:
+			if(values[0].compareTo(Lexer._true) == 0) currentLine += " loop";
+			break;
+		case Lexer._muted:
+			if(values[0].compareTo(Lexer._true) == 0) currentLine += " muted";
+			break;
+		case Lexer._preload:
+			if(values[0].compareTo(Lexer._false) == 0) currentLine += " preload=\"none\"";
+			break;
+		case Lexer._onclick:
+			currentLine += " onclick="+values[0];
+			break;
+		case Lexer._onchange:
+			currentLine += " onchange="+values[0];
+			break;
+		case Lexer._align:
+		case Lexer._type:
+		case Lexer._placeholder:
+		case Lexer._header:
+		case Lexer._text_align:
+			addStyle("text-align:"+values[0]);
+			break;
+		case Lexer._text_decoration:
+		case Lexer._text_color:
+			addStyle("color:"+values[0]);
+			break;
+		case Lexer._text:
+		case Lexer._font_size:
+		case Lexer._font_family:
+		case Lexer._animation:
+		case Lexer._bgcolor:
+			addStyle("background-color:"+values[0]);
+			break;
+		case Lexer._border_color:
+			addStyle("border-color:"+values[0]);
+			break;
+		case Lexer._border_radius:
+			addStyle("border-radius:"+getJoined(values));
+			break;
+		case Lexer._border:
+			addStyle("border-width:"+getJoined(values));
+			break;
+		case Lexer._class:
+			addClass(values[0]);
+			break;
+		case Lexer._effect:
+		case Lexer._elevation:
+		case Lexer._height:
+			addStyle("height:"+values[0]);
+			break;
+		case Lexer._id:
+			currentLine += " id="+values[0];
+			break;
+		case Lexer._link:
+		case Lexer._margin:
+			addStyle("margin:"+getJoined(values));
+			break;
+		case Lexer._padding:
+			addStyle("padding:"+getJoined(values));
+			break;
+		case Lexer._slots:
+		case Lexer._tooltip:
+			currentLine += " title="+values[0];
+			break;
+		case Lexer._width:
+			addStyle("width:"+values[0]);
+			break;
+		case Lexer._closable:
+		case Lexer._delay:
+		case Lexer._slide_controls:
+		case Lexer._indicators:
+		case Lexer._caption_position:
+		case Lexer._caption:
+		case Lexer._selected:
+		}
 	}
 	
 	/** Termina de escribir la etiqueta de apertura para proceder al contenido */
@@ -289,7 +378,7 @@ public class CodeGenerator {
 	public void addClass(String attr) {
 		// Comprobamos que se haya declarado el atributo class y, si no, lo creamos
 		if(!currentLine.contains("class=\"")) {
-			currentLine = currentLine.substring(0, currentLine.length()-1) + " class=\"" + attr + "\">";
+			currentLine = currentLine + " class=\"" + attr + "\"";
 		}else {	
 			String[] sp = currentLine.split("class=\"");
 			if(sp.length == 2) {
@@ -302,8 +391,8 @@ public class CodeGenerator {
 	/** Introduce un atributo dentro del atributo style */
 	public void addStyle(String attr) {
 		// Comprobamos que se haya declarado el atributo style y, si no, lo creamos
-		if(!currentLine.contains("class=\"")) {
-			currentLine = currentLine.substring(0, currentLine.length()-1) + " style=\"" + attr + ";\">";
+		if(!currentLine.contains("style=\"")) {
+			currentLine = currentLine + " style=\"" + attr + ";\"";
 		}else {	
 			String[] sp = currentLine.split("style=\"");
 			if(sp.length == 2) {
@@ -317,6 +406,29 @@ public class CodeGenerator {
 	public void addLink(String url) {
 		currentLine = "<a href=\""+url+"\">" + currentLine;
 		// registrar que la etiqueta tiene hiper enlace para cerrarla luego
+	}
+	
+	
+	/** Devuelve varios valores unidos en una cadena */
+	private String getJoined(String[] v) {
+		String r = "";
+		int i;
+		for(i=0; i<v.length-1; i++) {
+			r += v[i] + " ";
+		}
+		r += v[i];
+		return r;
+	}
+	
+	/** Elimina las comillas dobles */
+	private String clean(String s) {
+		if(s.startsWith("\"")) {
+			s = s.substring(1, s.length());
+		}
+		if(s.endsWith("\"")) {
+			s = s.substring(0, s.length()-1);
+		}
+		return s;
 	}
 	
 	

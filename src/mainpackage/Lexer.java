@@ -31,7 +31,7 @@ public class Lexer {
 	public static final String _item = "item";
 	public static final String _attr = "attr";
 	public static final String _bool = "bool";
-	public static final String _color = "color";
+	//public static final String _color = "color";
 	public static final String _font = "font";
 	public static final String _tdecor = "tdecor";
 	public static final String _align = "align";
@@ -136,14 +136,14 @@ public class Lexer {
 			{_item,				"^"+_item},
 			{_attr,				"^(("+_alt+")|("+_poster+")|("+_src+")|("+_autoplay+")|("+_controls+")|("+_loop+")|("+_muted+")|("+_preload+")|("+_onclick+")|("+_onchange+")|("+_align+")|("+_type+")|("+_placeholder+")|("+_header+")|("+_text_align+")|("+_text_decoration+")|("+_text_color+")|("+_text+")|("+_font_size+")|("+_font_family+")|("+_animation+")|("+_bgcolor+")|("+_border_color+")|("+_border_radius+")|("+_border+")|("+_class+")|("+_effect+")|("+_elevation+")|("+_height+")|("+_id+")|("+_link+")|("+_margin+")|("+_padding+")|("+_slots+")|("+_tooltip+")|("+_width+")|("+_closable+")|("+_delay+")|("+_slide_controls+")|("+_indicators+")|("+_caption_position+")|("+_caption+")|("+_selected+"))"},
 			{_bool,				"^(("+_true+")|("+_false+"))"},
-			{_color,			"^((red)|(pink)|(purple)|(deep-purple)|(indigo)|(blue-gray)|(blue)|(light-blue)|(cyan)|(aqua)|(teal)|(green)|(light-green)|(lime)|(sand)|(khaki)|(yellow)|(amber)|(orange)|(deep-orange)|(brown)|(light-gray)|(gray)|(dark-gray)|(pale-red)|(pale-yellow)|(pale-green)|(pale-blue))"},
+			//{_color,			"^((red)|(pink)|(purple)|(deep-purple)|(indigo)|(blue-gray)|(blue)|(light-blue)|(cyan)|(aqua)|(teal)|(green)|(light-green)|(lime)|(sand)|(khaki)|(yellow)|(amber)|(orange)|(deep-orange)|(brown)|(light-gray)|(gray)|(dark-gray)|(pale-red)|(pale-yellow)|(pale-green)|(pale-blue))"},
 			{_font,				"^((TimesNewRoman)|(Georgia)|(AndaleMono)|(ArialBlack)|(Arial)|(Impact)|(TrebuchetMS)|(Verdana)|(ComicSansMS)|(CourierNew))"},
 			{_tdecor,			"^((wide)|(bold)|(italic)|(shadowed)|(underlined)|(strikethrough))"},
 			{_align,			"^((top-right)|(top-left)|(bottom-right)|(bottom-left)|(center)|(top)|(bottom)|(right)|(left))"},
 			{_effect,			"^((opacity-max)|(opacity-min)|(opacity)|(grayscale-max)|(grayscale-min)|(grayscale)|(sepia-max)|(sepia-min)|(sepia))"},
 			{_animation,		"^((zoom)|(fading)|(spin)|(move-up)|(move-down)|(move-right)|(move-left))"},
 			{_charset,			"^((cs-8859)|(cs-ansi)|(cs-ascii)|(cs-utf-8))"},	
-			{_text,				"^((\\\"[^\"]*\\\")|('[^']*'))"},
+			{_text,				"^((\"[^\"]*\")|('[^']*'))"},
 			{_integer,			"^(0|([1-9][0-9]*))"},
 			{_real,				"^((0.[0-9]*[1-9])|([1-9][0-9]*.[0-9]*[1-9]))"},
 			{_indicators,	 	"^((dots)|(numbers)|(miniatures))"},

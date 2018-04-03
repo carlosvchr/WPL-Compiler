@@ -36,7 +36,7 @@ public class SyntacticAnalyzer {
 	 * <ATTR>				-> attr dp <VALS> pc
 	 *
 	 * <VALS>				-> <VAL> | <VAL> coma <VALS>
-	 * <VAL>				-> bool | color | font | tdecor | align | effect | animation | charset | integer 
+	 * <VAL>				-> bool | font | tdecor | align | effect | animation | charset | integer 
 	 *						-> real | text | definetype | measure | none 
 	 *
 	 *********************************************************************************************************/
@@ -73,11 +73,11 @@ public class SyntacticAnalyzer {
 	/** @param Fichero fuente 
 	 *  @param Fichero donde se genera el código */
 	public SyntacticAnalyzer(String path, String output) {
+		openedTagsStack = new ArrayDeque<Symbol>();
 		generator = new CodeGenerator(output, openedTagsStack);
 		sem = new SemanticAnalyzer();
 		lex = new LexicalAnalyzer();
 		lex.start(path);
-		openedTagsStack = new ArrayDeque<Symbol>();
 	}
 	
 	/** Inicia el procesado del fuente */
@@ -136,7 +136,7 @@ public class SyntacticAnalyzer {
 		case ATTR:
 			return (t.compareTo(Lexer._attr) == 0);
 		case VALS:
-			return (t.compareTo(Lexer._bool) == 0 || t.compareTo(Lexer._color) == 0 || 
+			return (t.compareTo(Lexer._bool) == 0 || 
 					t.compareTo(Lexer._font) == 0 || t.compareTo(Lexer._tdecor) == 0 || 
 					t.compareTo(Lexer._align) == 0 || t.compareTo(Lexer._effect) == 0 || 
 					t.compareTo(Lexer._animation) == 0 || t.compareTo(Lexer._charset) == 0 || 
@@ -144,7 +144,7 @@ public class SyntacticAnalyzer {
 					t.compareTo(Lexer._text) == 0 || t.compareTo(Lexer._none) == 0 || 
 					t.compareTo(Lexer._measure) == 0);
 		case VAL:
-			return (t.compareTo(Lexer._bool) == 0 || t.compareTo(Lexer._color) == 0 || 
+			return (t.compareTo(Lexer._bool) == 0 || 
 					t.compareTo(Lexer._font) == 0 || t.compareTo(Lexer._tdecor) == 0 || 
 					t.compareTo(Lexer._align) == 0 || t.compareTo(Lexer._effect) == 0 || 
 					t.compareTo(Lexer._animation) == 0 || t.compareTo(Lexer._charset) == 0 || 
@@ -876,7 +876,7 @@ public class SyntacticAnalyzer {
 	private Symbol analyzeVal() {
 		
 		Symbol s = lex.next();
-		if(s.sym().compareTo(Lexer._bool) != 0 && s.sym().compareTo(Lexer._color) != 0 &&
+		if(s.sym().compareTo(Lexer._bool) != 0 &&
 				s.sym().compareTo(Lexer._font) != 0 && s.sym().compareTo(Lexer._tdecor) != 0 &&
 				s.sym().compareTo(Lexer._align) != 0 && s.sym().compareTo(Lexer._effect) != 0 &&
 				s.sym().compareTo(Lexer._animation) != 0 && s.sym().compareTo(Lexer._charset) != 0 &&
