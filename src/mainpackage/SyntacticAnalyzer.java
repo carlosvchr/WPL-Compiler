@@ -36,7 +36,7 @@ public class SyntacticAnalyzer {
 	 * <ATTR>				-> attr dp <VALS> pc
 	 *
 	 * <VALS>				-> <VAL> | <VAL> coma <VALS>
-	 * <VAL>				-> bool | font | tdecor | align | effect | animation | charset | integer 
+	 * <VAL>				-> bool | tdecor | align | effect | animation | charset | integer 
 	 *						-> real | text | definetype | measure | none 
 	 *
 	 *********************************************************************************************************/
@@ -67,14 +67,13 @@ public class SyntacticAnalyzer {
 	CodeGenerator generator = null;
 	
 	// Pila donde registramos las etiquetas abiertas para cerrarlas cuando llegue un cp
-	ArrayDeque<Symbol> openedTagsStack;
+	ArrayDeque<Symbol> openedTagsStac;
 	
 	
 	/** @param Fichero fuente 
 	 *  @param Fichero donde se genera el código */
 	public SyntacticAnalyzer(String path, String output) {
-		openedTagsStack = new ArrayDeque<Symbol>();
-		generator = new CodeGenerator(output, openedTagsStack);
+		generator = new CodeGenerator(output);
 		sem = new SemanticAnalyzer();
 		lex = new LexicalAnalyzer();
 		lex.start(path);
@@ -136,16 +135,14 @@ public class SyntacticAnalyzer {
 		case ATTR:
 			return (t.compareTo(Lexer._attr) == 0);
 		case VALS:
-			return (t.compareTo(Lexer._bool) == 0 || 
-					t.compareTo(Lexer._font) == 0 || t.compareTo(Lexer._tdecor) == 0 || 
+			return (t.compareTo(Lexer._bool) == 0 || t.compareTo(Lexer._tdecor) == 0 || 
 					t.compareTo(Lexer._align) == 0 || t.compareTo(Lexer._effect) == 0 || 
 					t.compareTo(Lexer._animation) == 0 || t.compareTo(Lexer._charset) == 0 || 
 					t.compareTo(Lexer._integer) == 0 || t.compareTo(Lexer._real) == 0 || 
 					t.compareTo(Lexer._text) == 0 || t.compareTo(Lexer._none) == 0 || 
 					t.compareTo(Lexer._measure) == 0);
 		case VAL:
-			return (t.compareTo(Lexer._bool) == 0 || 
-					t.compareTo(Lexer._font) == 0 || t.compareTo(Lexer._tdecor) == 0 || 
+			return (t.compareTo(Lexer._bool) == 0 || t.compareTo(Lexer._tdecor) == 0 || 
 					t.compareTo(Lexer._align) == 0 || t.compareTo(Lexer._effect) == 0 || 
 					t.compareTo(Lexer._animation) == 0 || t.compareTo(Lexer._charset) == 0 || 
 					t.compareTo(Lexer._integer) == 0 || t.compareTo(Lexer._real) == 0 || 
@@ -458,7 +455,6 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		openedTagsStack.push(s);
 		generator.openTag(s.val());
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
@@ -491,7 +487,7 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		generator.closeTag(openedTagsStack.pop().val());
+		generator.closeTag();
 		
 		return true;
 	}
@@ -506,7 +502,6 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		openedTagsStack.push(s);
 		generator.openTag(s.val());
 
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
@@ -539,7 +534,7 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		generator.closeTag(openedTagsStack.pop().val());
+		generator.closeTag();
 		
 		return true;
 	}
@@ -554,7 +549,6 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		openedTagsStack.push(s);
 		generator.openTag(s.val());
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
@@ -587,7 +581,7 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		generator.closeTag(openedTagsStack.pop().val());
+		generator.closeTag();
 		
 		return true;
 	}
@@ -602,7 +596,6 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		openedTagsStack.push(s);
 		generator.openTag(s.val());
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
@@ -629,7 +622,7 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		generator.closeTag(openedTagsStack.pop().val());
+		generator.closeTag();
 		
 		return true;
 	}
@@ -688,7 +681,6 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		openedTagsStack.push(s);
 		generator.openTag(s.val());
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
@@ -738,7 +730,7 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		generator.closeTag(openedTagsStack.pop().val());
+		generator.closeTag();
 				
 		return true;
 	}
@@ -768,7 +760,6 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		openedTagsStack.push(s);
 		generator.openTag(s.val());
 		
 		if(lex.next().sym().compareTo(Lexer._dp) != 0) {
@@ -795,7 +786,7 @@ public class SyntacticAnalyzer {
 			return false;
 		}
 		
-		generator.closeTag(openedTagsStack.pop().val());
+		generator.closeTag();
 		
 		return true;
 	}
@@ -865,6 +856,8 @@ public class SyntacticAnalyzer {
 			if(!belongs(NT.VAL, lex.next().sym())) {
 				printSyntacticError("val vals");
 			}
+			lex.undo();
+			values.add(analyzeVal());
 		}
 		lex.undo();
 		
@@ -876,8 +869,7 @@ public class SyntacticAnalyzer {
 	private Symbol analyzeVal() {
 		
 		Symbol s = lex.next();
-		if(s.sym().compareTo(Lexer._bool) != 0 &&
-				s.sym().compareTo(Lexer._font) != 0 && s.sym().compareTo(Lexer._tdecor) != 0 &&
+		if(s.sym().compareTo(Lexer._bool) != 0 && s.sym().compareTo(Lexer._tdecor) != 0 &&
 				s.sym().compareTo(Lexer._align) != 0 && s.sym().compareTo(Lexer._effect) != 0 &&
 				s.sym().compareTo(Lexer._animation) != 0 && s.sym().compareTo(Lexer._charset) != 0 &&
 				s.sym().compareTo(Lexer._integer) != 0 && s.sym().compareTo(Lexer._real) != 0 &&

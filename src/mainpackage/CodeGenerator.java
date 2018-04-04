@@ -8,22 +8,24 @@ public class CodeGenerator {
 
 	IOManager output;
 	String path;
-	int openedTags;
 	int radiogroups = 0;
 	
-	Deque<Symbol> containerStack;
+	Deque<String> containerStack;
 	
 	// Este atributo almacena la linea del tag hasta que se complete, entonces se emite
 	String currentLine;
 	
+	// Este atributo almacena el contenido que irá entre las etiquetas de la linea actual (del currentLine)
+	String currentContent;
+	
 	/** Proceso: startHead() -> genMetadata()* -> genImports()* -> startBody() -> generate()* -> end() */
 	
-	public CodeGenerator(String path, ArrayDeque<Symbol> ad) {
+	public CodeGenerator(String path) {
 		this.path = path;
-		this.containerStack = ad;
+		this.containerStack = new ArrayDeque<String>();
 		output = new IOManager();
-		openedTags = 0;
 		currentLine = "";
+		currentContent = "";
 	}
 	
 	public void startHead() {
@@ -31,7 +33,6 @@ public class CodeGenerator {
 		output.putLine("<!Doctype html>\n<html>\n<head>");
 		output.putLine("\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
 		output.putLine("\t<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">");
-		openedTags = 1;
 	}
 	
 	/** Genera todos los metadatos de la página */
@@ -40,30 +41,30 @@ public class CodeGenerator {
 		case Lexer._charset:
 			// Le quitamos el prefijo cs- y le añadimos comillas
 			meta[1] = "\"" + meta[1].replaceAll("cs-", "") + "\"";
-			output.putLine(tabs()+"<meta charset="+meta[1]+">");
+			output.putLine(tabs(1)+"<meta charset="+meta[1]+">");
 			break;
 		case Lexer._lang:
-			output.putLine(tabs()+"<meta lang="+meta[1]+">");
+			output.putLine(tabs(1)+"<meta lang="+meta[1]+">");
 			break;
 		case Lexer._redirect:
-			output.putLine(tabs()+"<meta http-equiv=\"refresh\" content=\""+meta[1]+"\">");
+			output.putLine(tabs(1)+"<meta http-equiv=\"refresh\" content=\""+meta[1]+"\">");
 			break;
 		case Lexer._author:
-			output.putLine(tabs()+"<meta name=\"author\" content="+meta[1]+">");
+			output.putLine(tabs(1)+"<meta name=\"author\" content="+meta[1]+">");
 			break;
 		case Lexer._description:
-			output.putLine(tabs()+"<meta name=\"description\" content="+meta[1]+">");
+			output.putLine(tabs(1)+"<meta name=\"description\" content="+meta[1]+">");
 			break;
 		case Lexer._keywords:
-			output.putLine(tabs()+"<meta name=\"keywords\" content="+meta[1]+">");
+			output.putLine(tabs(1)+"<meta name=\"keywords\" content="+meta[1]+">");
 			break;
 		case Lexer._title:
 			// Le quitamos las comillas
 			meta[1] = meta[1].substring(1, meta[1].length()-1);
-			output.putLine(tabs()+"<title>"+meta[1]+"</title>");
+			output.putLine(tabs(1)+"<title>"+meta[1]+"</title>");
 			break;
 		case Lexer._pageicon:
-			output.putLine(tabs()+"<link rel=\"icon\" href=\""+meta[1]+"\">");
+			output.putLine(tabs(1)+"<link rel=\"icon\" href=\""+meta[1]+"\">");
 			break;		
 		}
 		
@@ -72,9 +73,9 @@ public class CodeGenerator {
 	/** Genera el código necesario para incluir un fichero css o javascript */
 	public void genImport(String path) {
 		if(path.endsWith(".css\"")) {
-			output.putLine(tabs()+"<link rel=\"stylesheet\" href="+path+">");
+			output.putLine(tabs(1)+"<link rel=\"stylesheet\" href="+path+">");
 		}else if(path.endsWith(".js\"")) {
-			output.putLine(tabs()+"<script src="+path+"></script>");
+			output.putLine(tabs(1)+"<script src="+path+"></script>");
 		}
 	}
 	
@@ -91,74 +92,95 @@ public class CodeGenerator {
 		String inheritedAttrs = "";
 		
 		// Si este nuevo elemento se crea dentro de un hbox...
-		if(containerStack.peekLast().val().compareTo(Lexer._hbox) == 0) {
-			inheritedAttrs += " w3-cell";
-		}
-		
+		//if(containerStack.peekLast().compareTo(Lexer._hbox) == 0) {
+			//inheritedAttrs += " w3-cell";
+		//}/**** TODO: ESTO ESTA MAL, LO QUE SE PUEDE HACER ES QUE EL CONTAINERSTACK GUARDE TAMBIEN LA ETIQUETA PADRE  *****/
+
 		switch(tag) {
 		case Lexer._box:
-			currentLine = tabs()+"<div class=\"w3-display-container\"";
+			currentLine = "<div class=\"w3-display-container\">";
+			containerStack.push("</div>");
 			break;
 		case Lexer._hbox:
-			currentLine = tabs()+"<div";
+			currentLine = "<div>";
+			containerStack.push("</div>");
 			break;
 		case Lexer._vbox:
-			currentLine = tabs()+"<div";
+			currentLine = "<div>";
+			containerStack.push("</div>");
 			break;
 		case Lexer._sidebox:
-			currentLine = tabs()+"<div class=\"w3-sidebar w3-bar-block\"";
+			currentLine = "<div class=\"w3-sidebar w3-bar-block\">";
+			containerStack.push("</div>");
 			break;
 		case Lexer._modalbox:
-			currentLine = tabs()+"<div class=\"w3-modal\"><div class=\"w3-modal-container\"";
+			currentLine = "<div class=\"w3-modal\"><div class=\"w3-modal-container\">";
+			containerStack.push("</div>");
 			break;
 		case Lexer._tablebox:
-			currentLine = tabs()+"<table ";
+			currentLine = "<table>";
+			containerStack.push("</div>");
 			break;
 		case Lexer._dropdownbox:
-			currentLine = tabs()+"<div class=\"w3-dropdown-click\"";
+			currentLine = "<div class=\"w3-dropdown-click\">";
+			containerStack.push("</div>");
 			break;
 		case Lexer._tabbedbox:
-			currentLine = tabs()+"<div";
+			currentLine = "<div>";
+			containerStack.push("</div>");
 			break;
 		case Lexer._accordionbox:
-			currentLine = tabs()+"<div";
+			currentLine = "<div>";
+			containerStack.push("</div>");
 			break;
 		case Lexer._slideshow:
-			currentLine = tabs()+"<div";
+			currentLine = "<div>";
+			containerStack.push("</div>");
 			break;
 		case Lexer._radiogroup:
-			currentLine = tabs()+"<div";
+			currentLine = "<div>";
+			containerStack.push("</div>");
 			radiogroups++;
 			break;
 		case Lexer._radiobutton:
-			currentLine = tabs()+"<input class=\"w3-radio\" type=\"radio\" name=\"rg-"+radiogroups+"\"";
+			currentLine = "<input class=\"w3-radio\" type=\"radio\" name=\"rg-"+radiogroups+"\">";
+			containerStack.push("</input>");
 			break;
 		case Lexer._button:
-			currentLine = tabs()+"<button class=\"w3-button\"";
+			currentLine = "<button class=\"w3-button\">";
+			containerStack.push("</button>");
 			break;
 		case Lexer._image:
-			currentLine = tabs()+"<img";
+			currentLine = "<img>";
+			containerStack.push("</img>");
 			break;
 		case Lexer._video:
-			currentLine = tabs()+"<video";
+			currentLine = "<video>";
+			containerStack.push("</video>");
 			break;
 		case Lexer._audio:
-			currentLine = tabs()+"<audio";
+			currentLine = "<audio>";
+			containerStack.push("</audio>");
 			break;
 		case Lexer._textfield:
-			currentLine = tabs()+"<input class=\"w3-input\" type=\"text\" ";
+			currentLine = "<input class=\"w3-input\" type=\"text\">";
+			containerStack.push("</input>");
 			break;
 		case Lexer._checkbox:
-			currentLine = tabs()+"<input class=\"w3-check\" type=\"checkbox\" ";
+			currentLine = tabs()+"<input class=\"w3-check\" type=\"checkbox\">";
+			containerStack.push("</input>");
 			break;
 		case Lexer._label:
-			currentLine = tabs()+"<div";
+			currentLine = "<div>";
+			containerStack.push("</div>");
 			break;
 		case Lexer._progressbar:
-			currentLine = tabs()+"<div";
+			currentLine = "<div>";
+			containerStack.push("</div>");
 			break;
 		case Lexer._item:
-			currentLine = tabs()+"<div";
+			currentLine = "<div>";
+			containerStack.push("</div>");
 			break;
 		}
 	}
@@ -170,50 +192,95 @@ public class CodeGenerator {
 		}
 		switch(attr) {
 		case Lexer._alt:
-			currentLine += " alt="+values[0];
+			addAttr("alt="+values[0]);
 			break;
 		case Lexer._poster:
-			currentLine += " poster="+values[0];
+			addAttr("poster="+values[0]);
 			break;
 		case Lexer._src:
-			currentLine += " src="+values[0];
+			addAttr("src="+values[0]);
 			break;
 		case Lexer._autoplay:
-			if(values[0].compareTo(Lexer._true) == 0) currentLine += " autoplay";
+			if(values[0].compareTo(Lexer._true) == 0) addAttr("autoplay");
 			break;
 		case Lexer._controls:
-			if(values[0].compareTo(Lexer._true) == 0) currentLine += " controls";
+			if(values[0].compareTo(Lexer._true) == 0) addAttr("controls");
 			break;
 		case Lexer._loop:
-			if(values[0].compareTo(Lexer._true) == 0) currentLine += " loop";
+			if(values[0].compareTo(Lexer._true) == 0) addAttr("loop");
 			break;
 		case Lexer._muted:
-			if(values[0].compareTo(Lexer._true) == 0) currentLine += " muted";
+			if(values[0].compareTo(Lexer._true) == 0) addAttr("muted");
 			break;
 		case Lexer._preload:
-			if(values[0].compareTo(Lexer._false) == 0) currentLine += " preload=\"none\"";
+			if(values[0].compareTo(Lexer._false) == 0) addAttr("preload=\"none\"");
 			break;
 		case Lexer._onclick:
-			currentLine += " onclick="+values[0];
+			addAttr("onclick=\""+values[0]+"\"");
 			break;
 		case Lexer._onchange:
-			currentLine += " onchange="+values[0];
+			addAttr("onchange=\""+values[0]+"\"");
 			break;
 		case Lexer._align:
+			switch(values[0]) {
+			case Lexer._top: addClass("w3-display-topmiddle"); break;
+			case Lexer._bottom: addClass("w3-display-bottommiddle"); break;
+			case Lexer._right: addClass("w3-display-right"); break;
+			case Lexer._left: addClass("w3-display-left"); break;
+			case Lexer._top_left: addClass("w3-display-topleft"); break;
+			case Lexer._top_right: addClass("w3-display-topright"); break;
+			case Lexer._bottom_left: addClass("w3-display-bottomleft"); break;
+			case Lexer._bottom_right: addClass("w3-display-bottomright"); break;
+			case Lexer._center: addClass("w3-display-middle"); break;
+			}
+			break;
 		case Lexer._type:
 		case Lexer._placeholder:
+			addAttr("placeholder=\""+values[0]+"\"");
+			break;
 		case Lexer._header:
 		case Lexer._text_align:
 			addStyle("text-align:"+values[0]);
 			break;
 		case Lexer._text_decoration:
+			String textDecoration = "";
+			for(int i=0; i<values.length; i++) {
+				switch(values[i]) {
+				case Lexer._italic: addStyle("font-style:italic"); break;
+				case Lexer._bold: addStyle("font-weight:bold"); break;
+				case Lexer._overline: textDecoration += " overline"; break;
+				case Lexer._underline: textDecoration += " underline"; break;
+				case Lexer._strikethrough: textDecoration += " line-through"; break;
+				}
+			}
+			if(textDecoration.length()>0) {
+				addStyle("text-decoration:"+textDecoration);
+			}
+			break;
 		case Lexer._text_color:
 			addStyle("color:"+values[0]);
 			break;
 		case Lexer._text:
+			currentContent += values[0];
+			break;
 		case Lexer._font_size:
+			addStyle("font-size:"+values[0]);
+			break;
 		case Lexer._font_family:
+			addStyle("font-family:'"+values[0]+"'");
+			break;
 		case Lexer._animation:
+			switch(values[0]) {
+			case Lexer._zoom: addClass("w3-animate-zoom"); break;
+			case Lexer._fading: addClass("w3-animate-fading"); break;
+			case Lexer._fade_in: addClass("w3-animate-opacity"); break;
+			case Lexer._spin: addClass("w3-spin"); break;
+			case Lexer._move_up: addClass("w3-animate-top"); break;
+			case Lexer._move_down: addClass("w3-animate-bottom"); break;
+			case Lexer._move_right: addClass("w3-animate-right"); break;
+			case Lexer._move_left: addClass("w3-animate-left"); break;
+			}
+			break;
 		case Lexer._bgcolor:
 			addStyle("background-color:"+values[0]);
 			break;
@@ -224,20 +291,37 @@ public class CodeGenerator {
 			addStyle("border-radius:"+getJoined(values));
 			break;
 		case Lexer._border:
-			addStyle("border-width:"+getJoined(values));
+			addStyle("border-style:solid; border-width:"+getJoined(values));
 			break;
 		case Lexer._class:
 			addClass(values[0]);
 			break;
 		case Lexer._effect:
+			switch(values[0]) {
+			case Lexer._opacity: addClass("w3-opacity"); break;
+			case Lexer._opacity_min: addClass("w3-opacity-min"); break;
+			case Lexer._opacity_max: addClass("w3-opacity-max"); break;
+			case Lexer._sepia: addClass("w3-sepia"); break;
+			case Lexer._sepia_min: addClass("w3-sepia-min"); break;
+			case Lexer._sepia_max: addClass("w3-sepia-max"); break;
+			case Lexer._grayscale: addClass("w3-grayscale"); break;
+			case Lexer._grayscale_min: addClass("w3-grayscale-min"); break;
+			case Lexer._grayscale_max: addClass("w3-grayscale-max"); break;
+			}
+			break;
 		case Lexer._elevation:
+			int level = Integer.parseInt(values[0]);
+			addStyle("box-shadow:0 "+2*level+"px "+5*level+"px 0 rgba(0,0,0,0.16),0 "+2*level+"px "+10*level+"px 0 rgba(0,0,0,0.12)");
 		case Lexer._height:
 			addStyle("height:"+values[0]);
 			break;
 		case Lexer._id:
-			currentLine += " id="+values[0];
+			addAttr("id=\""+values[0]+"\"");
 			break;
 		case Lexer._link:
+			currentLine = "<a href=\""+values[0]+"\">" + currentLine;
+			containerStack.push(containerStack.pop() + "</a>");
+			break;
 		case Lexer._margin:
 			addStyle("margin:"+getJoined(values));
 			break;
@@ -246,25 +330,26 @@ public class CodeGenerator {
 			break;
 		case Lexer._slots:
 		case Lexer._tooltip:
-			currentLine += " title="+values[0];
+			addAttr("title="+values[0]);
 			break;
 		case Lexer._width:
 			addStyle("width:"+values[0]);
 			break;
 		case Lexer._closable:
+			currentContent += "<span onclick=\"this.parentElement.style.display='none'\" class=\"w3-button w3-display-right\">&times</span>";
 		case Lexer._delay:
 		case Lexer._slide_controls:
 		case Lexer._indicators:
 		case Lexer._caption_position:
 		case Lexer._caption:
 		case Lexer._selected:
+			// if parent is checkbox ... else if is radiobutton ...
 		}
 	}
 	
 	/** Termina de escribir la etiqueta de apertura para proceder al contenido */
 	public void finishOpenTag() {
-		output.putString(currentLine+">\n");
-		openedTags ++;
+		output.putString(tabs()+currentLine+"\n");
 	}
 	
 	/** Escribe contenido entre las etiquetas */
@@ -273,73 +358,12 @@ public class CodeGenerator {
 	}
 	
 	/** Cierra la etiqueta abierta */
-	public void closeTag(String tag) {
-		openedTags--;
-		switch(tag) {
-		case Lexer._box:
-			output.putLine(tabs()+"</div>");
-			break;
-		case Lexer._hbox:
-			output.putLine(tabs()+"</div>");
-			break;
-		case Lexer._vbox:
-			output.putLine(tabs()+"</div>");
-			break;
-		case Lexer._sidebox:
-			output.putLine(tabs()+"</div>");
-			break;
-		case Lexer._modalbox:
-			output.putLine(tabs()+"</div>");
-			break;
-		case Lexer._tablebox:
-			output.putLine(tabs()+"</table>");
-			break;
-		case Lexer._dropdownbox:
-			output.putLine(tabs()+"</div>");
-			break;
-		case Lexer._tabbedbox:
-			output.putLine(tabs()+"</div>");
-			break;
-		case Lexer._accordionbox:
-			output.putLine(tabs()+"</div>");
-			break;
-		case Lexer._slideshow:
-			output.putLine(tabs()+"</div>");
-			break;
-		case Lexer._radiogroup:
-			output.putLine(tabs()+"</div>");
-			break;
-		case Lexer._radiobutton:
-			output.putLine(tabs()+"</input>");
-			break;
-		case Lexer._button:
-			output.putLine(tabs()+"</button>");
-			break;
-		case Lexer._image:
-			output.putLine(tabs()+"</img>");
-			break;
-		case Lexer._video:
-			output.putLine(tabs()+"</video>");
-			break;
-		case Lexer._audio:
-			output.putLine(tabs()+"</audio>");
-			break;
-		case Lexer._textfield:
-			output.putLine(tabs()+"</input>");
-			break;
-		case Lexer._checkbox:
-			output.putLine(tabs()+"</input>");
-			break;
-		case Lexer._label:
-			output.putLine(tabs()+"</div>");
-			break;
-		case Lexer._progressbar:
-			output.putLine(tabs()+"</div>");
-			break;
-		case Lexer._item:
-			output.putLine(tabs()+"</div>");
-			break;
+	public void closeTag() {
+		if(currentContent.length() > 0) {
+			output.putLine(tabs(1)+currentContent);
+			currentContent = "";
 		}
+		output.putLine(tabs()+containerStack.pop());
 	}
 	
 	
@@ -364,11 +388,22 @@ public class CodeGenerator {
 		}
 		output.deleteFile(path);
 	}
+
 	
 	/** Devuelve el numero de tabuladores de una linea */
 	public String tabs() {
 		String s = "";
-		for(int i=0; i<openedTags; i++) {
+		for(int i=0; i<containerStack.size(); i++) {
+			s += "    ";
+		}
+		return s;
+	}
+	
+	
+	/** Devuelve n numero de tabs mas del actual de la linea */
+	public String tabs(int n) {
+		String s = "";
+		for(int i=0; i<containerStack.size() + n; i++) {
 			s += "    ";
 		}
 		return s;
@@ -378,7 +413,7 @@ public class CodeGenerator {
 	public void addClass(String attr) {
 		// Comprobamos que se haya declarado el atributo class y, si no, lo creamos
 		if(!currentLine.contains("class=\"")) {
-			currentLine = currentLine + " class=\"" + attr + "\"";
+			currentLine = currentLine.substring(0, currentLine.length()-1) + " class=\"" + attr + "\">";
 		}else {	
 			String[] sp = currentLine.split("class=\"");
 			if(sp.length == 2) {
@@ -392,7 +427,7 @@ public class CodeGenerator {
 	public void addStyle(String attr) {
 		// Comprobamos que se haya declarado el atributo style y, si no, lo creamos
 		if(!currentLine.contains("style=\"")) {
-			currentLine = currentLine + " style=\"" + attr + ";\"";
+			currentLine = currentLine.substring(0, currentLine.length()-1) + " style=\"" + attr + ";\">";
 		}else {	
 			String[] sp = currentLine.split("style=\"");
 			if(sp.length == 2) {
@@ -402,10 +437,9 @@ public class CodeGenerator {
 	}
 	
 	
-	/** Agrega una hiperenlace a la etiqueta */
-	public void addLink(String url) {
-		currentLine = "<a href=\""+url+"\">" + currentLine;
-		// registrar que la etiqueta tiene hiper enlace para cerrarla luego
+	/** Agrega un atributo a la etiqueta actual*/
+	public void addAttr(String attr) {
+		currentLine = currentLine.substring(0, currentLine.length()-1)+" "+attr+">";
 	}
 	
 	

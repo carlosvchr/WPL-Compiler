@@ -31,8 +31,6 @@ public class Lexer {
 	public static final String _item = "item";
 	public static final String _attr = "attr";
 	public static final String _bool = "bool";
-	//public static final String _color = "color";
-	public static final String _font = "font";
 	public static final String _tdecor = "tdecor";
 	public static final String _align = "align";
 	public static final String _effect = "effect";
@@ -97,7 +95,7 @@ public class Lexer {
 	public static final String _onchange = "onchange";
 	public static final String _placeholder = "placeholder";
 	public static final String _text_align = "text-align";
-	public static final String _text_decoration = "text-decoration";
+	public static final String _text_decoration = "text-style";
 	public static final String _text_color = "text-color";
 	public static final String _font_family = "font-family";
 	public static final String _font_size = "font-size";
@@ -106,6 +104,38 @@ public class Lexer {
 	public static final String _caption_position = "caption-position";
 	public static final String _caption = "caption";
 	public static final String _selected = "selected";
+	public static final String _zoom = "zoom";
+	public static final String _fading = "fading";
+	public static final String _fade_in = "fade-in";
+	public static final String _spin = "spin";
+	public static final String _move_up = "move-up";
+	public static final String _move_down = "move-down";
+	public static final String _move_right = "move-right";
+	public static final String _move_left = "move-left";
+	public static final String _opacity = "opacity";
+	public static final String _opacity_min = "opacity-min";
+	public static final String _opacity_max = "opacity-max";
+	public static final String _grayscale = "grayscale";
+	public static final String _grayscale_min = "grayscale-min";
+	public static final String _grayscale_max = "grayscale_max";
+	public static final String _sepia = "sepia";
+	public static final String _sepia_min = "sepia-min";
+	public static final String _sepia_max = "sepia-max";
+	public static final String _top = "top";
+	public static final String _bottom = "bottom";
+	public static final String _right = "right";
+	public static final String _left = "left";
+	public static final String _top_left = "top-left";
+	public static final String _top_right = "top-right";
+	public static final String _bottom_left = "bottom-left";
+	public static final String _bottom_right = "bottom-right";
+	public static final String _center = "center";
+	public static final String _italic = "italic";
+	public static final String _bold = "bold";
+	public static final String _strikethrough = "strikethrough";
+	public static final String _overline = "overline";
+	public static final String _underline = "underline";
+	
 	
 	public static String[][] lexer = {
 			{_comment,			"^(#.*)"},
@@ -136,12 +166,10 @@ public class Lexer {
 			{_item,				"^"+_item},
 			{_attr,				"^(("+_alt+")|("+_poster+")|("+_src+")|("+_autoplay+")|("+_controls+")|("+_loop+")|("+_muted+")|("+_preload+")|("+_onclick+")|("+_onchange+")|("+_align+")|("+_type+")|("+_placeholder+")|("+_header+")|("+_text_align+")|("+_text_decoration+")|("+_text_color+")|("+_text+")|("+_font_size+")|("+_font_family+")|("+_animation+")|("+_bgcolor+")|("+_border_color+")|("+_border_radius+")|("+_border+")|("+_class+")|("+_effect+")|("+_elevation+")|("+_height+")|("+_id+")|("+_link+")|("+_margin+")|("+_padding+")|("+_slots+")|("+_tooltip+")|("+_width+")|("+_closable+")|("+_delay+")|("+_slide_controls+")|("+_indicators+")|("+_caption_position+")|("+_caption+")|("+_selected+"))"},
 			{_bool,				"^(("+_true+")|("+_false+"))"},
-			//{_color,			"^((red)|(pink)|(purple)|(deep-purple)|(indigo)|(blue-gray)|(blue)|(light-blue)|(cyan)|(aqua)|(teal)|(green)|(light-green)|(lime)|(sand)|(khaki)|(yellow)|(amber)|(orange)|(deep-orange)|(brown)|(light-gray)|(gray)|(dark-gray)|(pale-red)|(pale-yellow)|(pale-green)|(pale-blue))"},
-			{_font,				"^((TimesNewRoman)|(Georgia)|(AndaleMono)|(ArialBlack)|(Arial)|(Impact)|(TrebuchetMS)|(Verdana)|(ComicSansMS)|(CourierNew))"},
-			{_tdecor,			"^((wide)|(bold)|(italic)|(shadowed)|(underlined)|(strikethrough))"},
-			{_align,			"^((top-right)|(top-left)|(bottom-right)|(bottom-left)|(center)|(top)|(bottom)|(right)|(left))"},
-			{_effect,			"^((opacity-max)|(opacity-min)|(opacity)|(grayscale-max)|(grayscale-min)|(grayscale)|(sepia-max)|(sepia-min)|(sepia))"},
-			{_animation,		"^((zoom)|(fading)|(spin)|(move-up)|(move-down)|(move-right)|(move-left))"},
+			{_tdecor,			"^(("+_bold+")|("+_italic+")|("+_underline+")|("+_overline+")|("+_strikethrough+"))"},
+			{_align,			"^(("+_top_right+")|("+_top_left+")|("+_bottom_right+")|("+_bottom_left+")|("+_center+")|("+_top+")|("+_bottom+")|("+_right+")|("+_left+"))"},
+			{_effect,			"^(("+_opacity_max+")|("+_opacity_min+")|("+_opacity+")|("+_grayscale_max+")|("+_grayscale_min+")|("+_grayscale+")|("+_sepia_max+")|("+_sepia_min+")|("+_sepia+"))"},
+			{_animation,		"^(("+_zoom+")|("+_fading+")|("+_fade_in+")|("+_spin+")|("+_move_up+")|("+_move_down+")|("+_move_right+")|("+_move_left+"))"},
 			{_charset,			"^((cs-8859)|(cs-ansi)|(cs-ascii)|(cs-utf-8))"},	
 			{_text,				"^((\"[^\"]*\")|('[^']*'))"},
 			{_integer,			"^(0|([1-9][0-9]*))"},
@@ -150,6 +178,8 @@ public class Lexer {
 			{_slidecontrols,	"^((angulars-bottom)|(angulars)|(arrows-bottom)|(arrows))"},
 			{_none,				"^none"},
 			{_id,				"^([a-zA-Z_][a-zA-Z0-9_-])"}};
+	//{_font,				"^((TimesNewRoman)|(Georgia)|(AndaleMono)|(ArialBlack)|(Arial)|(Impact)|(TrebuchetMS)|(Verdana)|(ComicSansMS)|(CourierNew))"},		
+	//{_color,			"^((red)|(pink)|(purple)|(deep-purple)|(indigo)|(blue-gray)|(blue)|(light-blue)|(cyan)|(aqua)|(teal)|(green)|(light-green)|(lime)|(sand)|(khaki)|(yellow)|(amber)|(orange)|(deep-orange)|(brown)|(light-gray)|(gray)|(dark-gray)|(pale-red)|(pale-yellow)|(pale-green)|(pale-blue))"}
 }
 
 // box: alignment, animation, background-color, border, border-color, border-radius, class, effect, elevation, id,
