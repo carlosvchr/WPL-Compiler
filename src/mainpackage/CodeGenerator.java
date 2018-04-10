@@ -9,8 +9,10 @@ public class CodeGenerator {
 	IOManager output;
 	String path;
 	int radiogroups = 0;
+	int tabbedboxs = 0;
+	int itemcont = 0;
 	
-	Deque<String> containerStack;
+	Deque<String[]> containerStack;
 	
 	// Este atributo almacena la linea del tag hasta que se complete, entonces se emite
 	String currentLine;
@@ -22,7 +24,7 @@ public class CodeGenerator {
 	
 	public CodeGenerator(String path) {
 		this.path = path;
-		this.containerStack = new ArrayDeque<String>();
+		this.containerStack = new ArrayDeque<String[]>();
 		output = new IOManager();
 		currentLine = "";
 		currentContent = "";
@@ -59,9 +61,7 @@ public class CodeGenerator {
 			output.putLine(tabs(1)+"<meta name=\"keywords\" content="+meta[1]+">");
 			break;
 		case Lexer._title:
-			// Le quitamos las comillas
-			meta[1] = meta[1].substring(1, meta[1].length()-1);
-			output.putLine(tabs(1)+"<title>"+meta[1]+"</title>");
+			output.putLine(tabs(1)+"<title>"+clean(meta[1])+"</title>");
 			break;
 		case Lexer._pageicon:
 			output.putLine(tabs(1)+"<link rel=\"icon\" href=\""+meta[1]+"\">");
@@ -89,100 +89,187 @@ public class CodeGenerator {
 	
 	/** Aquí se generan todas las sentencias del body */
 	public void openTag(String tag) {
-		String inheritedAttrs = "";
 		
-		// Si este nuevo elemento se crea dentro de un hbox...
-		//if(containerStack.peekLast().compareTo(Lexer._hbox) == 0) {
-			//inheritedAttrs += " w3-cell";
-		//}/**** TODO: ESTO ESTA MAL, LO QUE SE PUEDE HACER ES QUE EL CONTAINERSTACK GUARDE TAMBIEN LA ETIQUETA PADRE  *****/
-
+		String s[] = new String[2];
 		switch(tag) {
 		case Lexer._box:
 			currentLine = "<div class=\"w3-display-container\">";
-			containerStack.push("</div>");
+			s[0] = Lexer._box;
+			s[1] = "</div>";
+			containerStack.push(s);
 			break;
 		case Lexer._hbox:
 			currentLine = "<div>";
-			containerStack.push("</div>");
+			s[0] = Lexer._hbox;
+			s[1] = "</div>";
+			containerStack.push(s);
 			break;
 		case Lexer._vbox:
 			currentLine = "<div>";
-			containerStack.push("</div>");
+			s[0] = Lexer._vbox;
+			s[1] = "</div>";
+			containerStack.push(s);
 			break;
 		case Lexer._sidebox:
 			currentLine = "<div class=\"w3-sidebar w3-bar-block\">";
-			containerStack.push("</div>");
+			s[0] = Lexer._sidebox;
+			s[1] = "</div>";
+			containerStack.push(s);
 			break;
 		case Lexer._modalbox:
 			currentLine = "<div class=\"w3-modal\"><div class=\"w3-modal-container\">";
-			containerStack.push("</div>");
+			s[0] = Lexer._modalbox;
+			s[1] = "</div>";
+			containerStack.push(s);
 			break;
 		case Lexer._tablebox:
 			currentLine = "<table>";
-			containerStack.push("</div>");
+			s[0] = Lexer._tablebox;
+			s[1] = "</table>";
+			containerStack.push(s);
 			break;
 		case Lexer._dropdownbox:
 			currentLine = "<div class=\"w3-dropdown-click\">";
-			containerStack.push("</div>");
+			s[0] = Lexer._dropdownbox;
+			s[1] = "</div>";
+			containerStack.push(s);
 			break;
 		case Lexer._tabbedbox:
+			itemcont = 0;
+			tabbedboxs ++;
+			output.putLine(tabs(1)+"<script>\n" +
+					tabs(2)+"function openTab(v, vclass) {\n" + 
+					tabs(2)+"    var i;\n" + 
+					tabs(2)+"    var x = document.getElementsByClassName(vclass);\n" + 
+					tabs(2)+					"    for (i = 0; i < x.length; i++) {\n" + 
+					tabs(2)+"        x[i].style.display = \"none\"; \n" + 
+					tabs(2)+"    }\n" + 
+					tabs(2)+"    document.getElementById(v).style.display = \"block\"; \n" + 
+					tabs(2)+"}\n"+
+					tabs(1)+"</script>");
 			currentLine = "<div>";
-			containerStack.push("</div>");
+			s[0] = Lexer._tabbedbox;
+			s[1] = "</div>";
+			containerStack.push(s);
 			break;
 		case Lexer._accordionbox:
 			currentLine = "<div>";
-			containerStack.push("</div>");
+			s[0] = Lexer._accordionbox;
+			s[1] = "</div>";
+			containerStack.push(s);
 			break;
 		case Lexer._slideshow:
 			currentLine = "<div>";
-			containerStack.push("</div>");
+			s[0] = Lexer._slideshow;
+			s[1] = "</div>";
+			containerStack.push(s);
 			break;
 		case Lexer._radiogroup:
 			currentLine = "<div>";
-			containerStack.push("</div>");
+			s[0] = Lexer._radiogroup;
+			s[1] = "</div>";
+			containerStack.push(s);
 			radiogroups++;
 			break;
 		case Lexer._radiobutton:
 			currentLine = "<input class=\"w3-radio\" type=\"radio\" name=\"rg-"+radiogroups+"\">";
-			containerStack.push("</input>");
+			s[0] = Lexer._radiobutton;
+			s[1] = "</input>";
+			containerStack.push(s);
 			break;
 		case Lexer._button:
 			currentLine = "<button class=\"w3-button\">";
-			containerStack.push("</button>");
+			s[0] = Lexer._button;
+			s[1] = "</button>";
+			containerStack.push(s);
 			break;
 		case Lexer._image:
 			currentLine = "<img>";
-			containerStack.push("</img>");
+			s[0] = Lexer._image;
+			s[1] = "</img>";
+			containerStack.push(s);
 			break;
 		case Lexer._video:
 			currentLine = "<video>";
-			containerStack.push("</video>");
+			s[0] = Lexer._video;
+			s[1] = "</video>";
+			containerStack.push(s);
 			break;
 		case Lexer._audio:
 			currentLine = "<audio>";
-			containerStack.push("</audio>");
+			s[0] = Lexer._audio;
+			s[1] = "</audio>";
+			containerStack.push(s);
 			break;
 		case Lexer._textfield:
 			currentLine = "<input class=\"w3-input\" type=\"text\">";
-			containerStack.push("</input>");
+			s[0] = Lexer._textfield;
+			s[1] = "</input>";
+			containerStack.push(s);
 			break;
 		case Lexer._checkbox:
 			currentLine = tabs()+"<input class=\"w3-check\" type=\"checkbox\">";
-			containerStack.push("</input>");
+			s[0] = Lexer._checkbox;
+			s[1] = "</input>";
+			containerStack.push(s);
 			break;
 		case Lexer._label:
 			currentLine = "<div>";
-			containerStack.push("</div>");
+			s[0] = Lexer._label;
+			s[1] = "</div>";
+			containerStack.push(s);
 			break;
 		case Lexer._progressbar:
 			currentLine = "<div>";
-			containerStack.push("</div>");
+			s[0] = Lexer._progressbar;
+			s[1] = "</div>";
+			containerStack.push(s);
 			break;
 		case Lexer._item:
-			currentLine = "<div>";
-			containerStack.push("</div>");
+			switch(getCurrent()) {
+			case Lexer._tablebox:
+				currentLine = "<tr>";
+				s[0] = Lexer._item;
+				s[1] = "</tr>";
+				containerStack.push(s);
+				break;
+			case Lexer._dropdownbox:
+			case Lexer._tabbedbox:
+				itemcont++;
+				currentLine = "<button onclick=\"openTab('tab"+itemcont+"', 'tabbedbox"+tabbedboxs+"')\">click</button>\n"+tabs(1);
+				currentLine += "<div>";
+				addClass("tabbedbox"+tabbedboxs);
+				addAttr("id=\"tab"+itemcont+"\"");
+				s[0] = Lexer._item;
+				s[1] = "</div>";
+				containerStack.push(s);
+				break;
+			case Lexer._slideshow:
+			case Lexer._accordionbox:
+			default:
+				currentLine = "<div>";
+				s[0] = Lexer._item;
+				s[1] = "</div>";
+				containerStack.push(s);
+				break;
+			}
 			break;
 		}
+		
+		// Comprobamos en qué contenedor estamos para heredar los atributos del contenedor padre
+		switch(getParent()) {
+		case Lexer._hbox:
+			break;
+		case Lexer._item:
+			switch(getGrandParent()) {
+			case Lexer._tablebox:
+				currentLine = "<td>"+currentLine;
+				String[] it = {containerStack.peekFirst()[0], containerStack.pop()[1]+"</td>"};
+				containerStack.push(it);
+			}		
+			break;
+		}
+		
 	}
 	
 	/** Escribe los atributos de las etiquetas */
@@ -312,6 +399,7 @@ public class CodeGenerator {
 		case Lexer._elevation:
 			int level = Integer.parseInt(values[0]);
 			addStyle("box-shadow:0 "+2*level+"px "+5*level+"px 0 rgba(0,0,0,0.16),0 "+2*level+"px "+10*level+"px 0 rgba(0,0,0,0.12)");
+			break;
 		case Lexer._height:
 			addStyle("height:"+values[0]);
 			break;
@@ -320,7 +408,8 @@ public class CodeGenerator {
 			break;
 		case Lexer._link:
 			currentLine = "<a href=\""+values[0]+"\">" + currentLine;
-			containerStack.push(containerStack.pop() + "</a>");
+			String[] s = {containerStack.peekLast()[0], containerStack.pop()[1]+"</a>"};
+			containerStack.push(s);
 			break;
 		case Lexer._margin:
 			addStyle("margin:"+getJoined(values));
@@ -337,6 +426,7 @@ public class CodeGenerator {
 			break;
 		case Lexer._closable:
 			currentContent += "<span onclick=\"this.parentElement.style.display='none'\" class=\"w3-button w3-display-right\">&times</span>";
+			break;
 		case Lexer._delay:
 		case Lexer._slide_controls:
 		case Lexer._indicators:
@@ -363,7 +453,7 @@ public class CodeGenerator {
 			output.putLine(tabs(1)+currentContent);
 			currentContent = "";
 		}
-		output.putLine(tabs()+containerStack.pop());
+		output.putLine(tabs()+containerStack.pop()[1]);
 	}
 	
 	
@@ -463,6 +553,39 @@ public class CodeGenerator {
 			s = s.substring(0, s.length()-1);
 		}
 		return s;
+	}
+	
+	/** Obtiene la etiqueta actual */
+	private String getCurrent() {
+		String current = "";
+		if(containerStack.size() >= 1) {
+			return containerStack.peekFirst()[0];
+		}
+		return current;
+	}
+	
+	/** Obtiene la etiqueta padre de la actual */
+	private String getParent() {
+		String parent = "";
+		if(containerStack.size() >= 2) {
+			String[] current = containerStack.pop();
+			parent = containerStack.peekFirst()[0];
+			containerStack.push(current);
+		}
+		return parent;
+	}
+	
+	/** Obtiene la etiqueta que contiene a la etiqueta padre */
+	private String getGrandParent() {
+		String grandParent = "";
+		if(containerStack.size() >= 3) {
+			String[] current = containerStack.pop();
+			String[] parent = containerStack.pop();
+			grandParent = containerStack.peekFirst()[0];
+			containerStack.push(parent);
+			containerStack.push(current);
+		}
+		return grandParent;
 	}
 	
 	

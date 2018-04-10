@@ -2,7 +2,6 @@ package mainpackage;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 
 public class SyntacticAnalyzer {
 	
@@ -45,8 +44,9 @@ public class SyntacticAnalyzer {
 	/**
 	 * 
 	 * Para poder procesar el mayor numero de errores sintacticos, una vez se haya detectado
-	 * uno, mostraremos el error, pero simularemos que emitimos un valor aceptable para que
-	 * pueda continuar el procesado. 
+	 * uno, mostraremos el error, y buscaremos un punto seguro para continuar analizando errores.
+	 * 
+	 * Este punto seguro será el siguiente al No Terminal que haya producido el error. 
 	 * 
 	 * */
 	
@@ -89,6 +89,19 @@ public class SyntacticAnalyzer {
 		lex.undo();
 		Symbol saux = lex.next();
 		System.err.println("Syntactic Analyzer: Error found on line "+lex.getLineNumber()+".: ..."+saux.val()+" ("+saux.sym()+"); Expected: "+s);
+	}
+	
+	/** Intenta llegar a un punto seguro tras un error para retomar el análisis */
+	private boolean securePoint(String nextTag) {
+		// Analizar siguientes del NT que haya producido el error ** No es el siguente codigo, esto es un memo 	**
+		Symbol next;
+		while((next = lex.next()) != null) {
+			if(next.sym().compareTo(nextTag) == 0) {
+				lex.undo();
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/** Comprueba si un terminal forma parte de los primeros de un no terminal */
@@ -865,7 +878,7 @@ public class SyntacticAnalyzer {
 	}
 	
 	
-	/** <VAL> */
+	/** <VAL> -> bool | tdecor | align | effect | animation | char | integer | real | text | none | measure */
 	private Symbol analyzeVal() {
 		
 		Symbol s = lex.next();
