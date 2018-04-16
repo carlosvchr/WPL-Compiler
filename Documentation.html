@@ -1,0 +1,194 @@
+<!Doctype html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+	<style>
+		header { height:72px; width:100%; position:fixed; top:0; left:0; background-color:#009688; color:#ffffff; }
+		h1 { font-size: 24px; }
+		footer { background-color:#004D40; }
+		#openNav { vertical-align:middle; height:52px; margin-top:10px; margin-bottom:10px; width:52px; background-color:#009688; color:#ffffff }
+		#openNav:focus { outline:0; }
+		#openNav:hover { box-shadow: inset 0px 0px 4px rgba(0,0,0,0.5); }
+		#openNav:active { box-shadow: inset 0px 0px 10px rgba(0,0,0,0.5); }
+		#closeSidebar { text-align:center; position:fixed; bottom:0; background-color:#E0E0E0; }
+		#headerTitle { vertical-align:middle; }
+		#tableHeader { background-color:#00695C; color:#ffffff; }
+		
+		.tab { padding-left: 2em; }
+		.tab2 { padding-left: 4em; }
+		.tab3 { padding-left: 6em; }
+	</style>
+	<script>
+		var mobile_width = 800;
+		function w3_toggleOpen(){
+			if(document.getElementById("sideMenu").style.display == "none"){
+				w3_open();
+			}else{
+				w3_close();
+			}
+		}
+		
+		function w3_open() {
+			if(window.innerWidth > mobile_width){
+				document.getElementById("sideMenu").style.width = "25%";
+				document.getElementById("closeSidebar").style.width = "25%";
+			}else{
+				document.getElementById("sideMenu").style.width = "100%";
+				document.getElementById("closeSidebar").style.width = "100%";
+			}
+			document.getElementById("sideMenu").style.display = "block";
+		}
+		
+		function w3_close() {
+			document.getElementById("sideMenu").style.display = "none";
+		}
+		
+		function closeSidebar(){
+			if(window.innerWidth <= mobile_width){
+				w3-close();
+			}
+		}
+	</script>
+</head>
+<body>
+	
+	<!-- HEADER -------------------------------------------------------------------------------->
+	<header class="w3-container w3-cell-row">
+		<button id="openNav" class="w3-button w3-xlarge w3-cell w3-round w3-hover-teal" onclick="w3_toggleOpen()">&#9776;</button>
+		<h1 id="headerTitle" class="w3-cell">WPL Documentation Pages</h1>
+	</header>
+	<div style="height:72px"></div>
+
+	<!-- SIDEBAR ------------------------------------------------------------------------------->
+	<div class="w3-sidebar w3-bar-block w3-card w3-animate-left" style="display:none; position:fixed; top:72px;" id="sideMenu">
+		<h4 class="w3-bar-item">Containers</h4>
+		<ul class="w3-ul">
+			<li><a href="#vboxref" onclick="w3_close()" class="w3-bar-item w3-button">vbox</a></li>
+			<li><a href="#hboxref" onclick="w3_close()" class="w3-bar-item w3-button">hbox</a></li>
+			<li><a href="#tableref" onclick="w3_close()" class="w3-bar-item w3-button">table</a></li>
+		</ul>
+		
+		<h4 class="w3-bar-item">Components</h4>
+
+		<h4 class="w3-bar-item">Attributes</h4>
+
+		<br><br>
+		<button id="closeSidebar" class="w3-button w3-border-top" onclick="w3_close()">Close &times;</button>
+	</div>
+	
+	<div id="main" class="w3-pane">
+		<!-- TABLE --------------------------------------------------------------------------------->
+		<table class="w3-table w3-striped w3-bordered w3-centered">
+			<tr id="tableHeader">
+				<th>Name</th>
+				<th>Description</th>
+				<th>Attributes/Values</th>
+			</tr>
+			<tr>
+				<td><a href="#vboxref">vbox</a></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td><a href="#hboxref">hbox</td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td><a href="#tableref">table</td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td><a href="#tabbedboxref">tabbedbox</td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td><a href="#sidebarref">sidebar</td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td><a href="#dropdownref">dropdown</td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td><a href="#accordionref">accordion</td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td><a href="#modalref">modal</td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td><a href="#radiogroupref">radiogroup</td>
+				<td></td>
+				<td></td>
+			</tr>
+		</table>
+		
+		<!-- CONTENT -------------------------------------------------------------------------------->
+		<ul class="w3-ul">
+			<li>
+				<div id="vboxref" class="w3-container">
+					<h2>vbox</h2>
+					<p>This container organizes elements vertically.</p>
+					<div class="w3-code">
+						vbox:<br>
+						<i class="tab">[attributes]</i><br>
+						<i class="tab">[tags]</i>
+					</div>
+				</div>
+			</li>
+			<li>
+				<div id="hboxref" class="w3-container">
+					<h2>hbox</h2>
+					<p>This container organizes elements horizontally.</p>
+					<div class="w3-code">
+						hbox:<br>
+						<i class="tab">[attributes]</i><br>
+						<i class="tab">[tags]</i>
+					</div>
+				</div>
+			</li>
+			<li>
+				<div id="tableref" class="w3-container">
+					<h2>table</h2>
+					<p>This container organizes elements in rows and columns.</p>
+					<p>Each row represent a table row, and each tag inside the row correspond with a cell of that row.</p>
+					<div class="w3-code">
+						table:<br>
+						<i class="tab">[attributes]</i><br>
+						<div class="tab">row:</div>
+						<i class="tab2">[tags]</i><br>
+						<div class="tab">row:</div>
+						<i class="tab2">[tags]</i><br>
+						<div class="tab">...</div>
+					</div>
+				</div>
+			</li>
+			<li>
+				<div id="tabbedboxref" class="w3-container">
+					<h2>tabbedbox</h2>
+					<p>This container organizes put the elements in a container. Only one component is showed at a time and can be switched pressing its correspondent tab.</p>
+					<div class="w3-code">
+						hbox:<br>
+						<i class="tab">[attributes]</i><br>
+						<i class="tab">[tags]</i>
+					</div>
+				</div>
+			</li>
+		<ul>
+	</div>
+	
+	<!-- FOOTER	----------------------------------------------------------------------------------->
+	<footer class="w3-container">
+		<br><br>
+	</footer>
+</body>
+</html>

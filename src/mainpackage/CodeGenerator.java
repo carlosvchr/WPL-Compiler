@@ -8,9 +8,10 @@ public class CodeGenerator {
 
 	IOManager output;
 	String path;
-	int radiogroups = 0;
-	int tabbedboxs = 0;
-	int itemcont = 0;
+	int radiogroups;
+	int tabbedboxs;
+	int itemcont;
+	String tabbedBar;
 	
 	Deque<String[]> containerStack;
 	
@@ -28,6 +29,10 @@ public class CodeGenerator {
 		output = new IOManager();
 		currentLine = "";
 		currentContent = "";
+		radiogroups = 0;
+		tabbedboxs = 0;
+		itemcont = 0;
+		tabbedBar = "";
 	}
 	
 	public void startHead() {
@@ -35,6 +40,9 @@ public class CodeGenerator {
 		output.putLine("<!Doctype html>\n<html>\n<head>");
 		output.putLine("\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
 		output.putLine("\t<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">");
+		output.putLine("\t<script>\n");
+		genPredefinedFunctions();
+		output.putLine("\t</script>");
 	}
 	
 	/** Genera todos los metadatos de la página */
@@ -135,18 +143,7 @@ public class CodeGenerator {
 			containerStack.push(s);
 			break;
 		case Lexer._tabbedbox:
-			itemcont = 0;
 			tabbedboxs ++;
-			output.putLine(tabs(1)+"<script>\n" +
-					tabs(2)+"function openTab(v, vclass) {\n" + 
-					tabs(2)+"    var i;\n" + 
-					tabs(2)+"    var x = document.getElementsByClassName(vclass);\n" + 
-					tabs(2)+					"    for (i = 0; i < x.length; i++) {\n" + 
-					tabs(2)+"        x[i].style.display = \"none\"; \n" + 
-					tabs(2)+"    }\n" + 
-					tabs(2)+"    document.getElementById(v).style.display = \"block\"; \n" + 
-					tabs(2)+"}\n"+
-					tabs(1)+"</script>");
 			currentLine = "<div>";
 			s[0] = Lexer._tabbedbox;
 			s[1] = "</div>";
@@ -236,10 +233,12 @@ public class CodeGenerator {
 			case Lexer._dropdownbox:
 			case Lexer._tabbedbox:
 				itemcont++;
-				currentLine = "<button onclick=\"openTab('tab"+itemcont+"', 'tabbedbox"+tabbedboxs+"')\">click</button>\n"+tabs(1);
-				currentLine += "<div>";
+				tabbedBar += tabs(2)+"<a class=\"w3-cell\" onclick=\"openTab('tabindicator"+tabbedboxs+"', 'tind"+itemcont+"', 'tab"+itemcont+"', 'tabbedbox"+tabbedboxs+"')\">"+
+						"<div id=\"tind"+itemcont+"\" class=\"tablink w3-bottombar w3-hover-light-grey w3-padding tabindicator"+tabbedboxs+"\">Click</div>"+"</a>\n";
+				currentLine = "<div>";
 				addClass("tabbedbox"+tabbedboxs);
 				addAttr("id=\"tab"+itemcont+"\"");
+				addStyle("display:none");
 				s[0] = Lexer._item;
 				s[1] = "</div>";
 				containerStack.push(s);
@@ -326,6 +325,7 @@ public class CodeGenerator {
 			addAttr("placeholder=\""+values[0]+"\"");
 			break;
 		case Lexer._header:
+			break;
 		case Lexer._text_align:
 			addStyle("text-align:"+values[0]);
 			break;
@@ -452,6 +452,13 @@ public class CodeGenerator {
 		if(currentContent.length() > 0) {
 			output.putLine(tabs(1)+currentContent);
 			currentContent = "";
+		}
+		switch(containerStack.peekFirst()[0]) {
+		case Lexer._tabbedbox:
+			String sbar = tabs()+"<div>\n" + tabbedBar + tabs(1) + "</div>";
+			tabbedBar = "";
+			output.putLine(tabs()+sbar);
+			break;
 		}
 		output.putLine(tabs()+containerStack.pop()[1]);
 	}
@@ -588,5 +595,22 @@ public class CodeGenerator {
 		return grandParent;
 	}
 	
+	/** Genera las funciones predefinidas para el correcto funcionamiento de algunos componentes */
+	private void genPredefinedFunctions() {
+		output.putLine(
+				tabs(2)+"function openTab(tabindicator, tid, v, vclass) {\n" + 
+				tabs(3)+"var i;\n" + 
+				tabs(3)+"var x = document.getElementsByClassName(vclass);\n" + 
+				tabs(3)+"for (i = 0; i < x.length; i++) {\n" + 
+				tabs(4)+"x[i].style.display = \"none\"; \n" + 
+				tabs(3)+"}\n"+
+				tabs(3)+"var tablinks = document.getElementsByClassName(tabindicator);\n"+
+				tabs(3)+"for (i = 0; i < x.length; i++) {\n" + 
+				tabs(4)+"tablinks[i].className = tablinks[i].className.replace(\" w3-border-red\", \"\");\n" +
+				tabs(3)+"}\n" + 
+				tabs(3)+"document.getElementById(v).style.display = \"block\";\n" + 
+				tabs(3)+"document.getElementById(tid).className += \" w3-border-red\";\n" + 
+				tabs(2)+"}\n");
+	}
 	
 }
