@@ -7,36 +7,25 @@ public class SyntacticAnalyzer {
 	
 	/** En esta clase se procede con la siguiente implementación: *********************************************
 	 * 
-	 * <PROGRAM>			-> <IMPORTS> <META> <DEFINES> <TAG>
+	 * <PROGRAM>			-> <IMPORTS> <META> <DEFINES> <TAGS>
+	 * <META>				-> meta dp <VALS> pc <META> | $
+	 * <IMPORTS>				-> import <VALS> pc <IMPORTS> | $
+	 * <DEFINES>				-> define dp op <VALS> cp <DEFINES> | $
 	 *
-	 * <META>				-> <METANR> <META> | $
-	 * <METANR>				-> meta dp <VALS> pc
+	 * <TAGS>				-> <TAG> <TAGS> | $
+	 * <TAG>				-> <CONTAINER> | <TABLE> | <COMPONENT> | <INCLUDE>
 	 *
-	 * <IMPORTS>			-> <IMPORT> <IMPORTS> | $
-	 * <IMPORT>				-> import <VALS> pc
-	 *
-	 * <DEFINES>			-> <DEFINE> <DEFINES> | $
-	 * <DEFINE>				-> define dp op name dp <VALS> pc content dp <VALS> pc cp
-	 *
-	 * <TAG>				-> <TAGNR> <TAG> | $
-	 * <TAGNR>				-> <CONTAINER> | <ITEMCONTAINER> | <RADIOGROUP> | <COMPONENT> | <INCLUDE>
-	 *
-	 * <CONTAINER>			-> container dp op <ATTRS> <TAG> cp
-	 * <ITEMCONTAINER>		-> itemcont dp op <ATTRS> <ITEMS> cp
-	 * <RADIOGROUP>			-> radiogroup dp op <ATTRS> <RADIOBUTTONS> cp
+	 * <CONTAINER>			-> container dp op <ATTRS> <TAGS> cp
+	 * <TABLE>				-> table dp op <ROWH> <ROWS> cp
+	 * <ROWH>				-> rowh dp op <TAGS> cp | $
+	 * <ROWS>				-> row dp op <TAGS> cp <ROWS> | $
 	 * <COMPONENT>			-> component dp op <ATTRS> cp
 	 * <INCLUDE>			-> include <VALS> pc
 	 *
-	 * <ITEMS>				-> <ITEM> <ITEMS> | $
-	 * <ITEM>				-> item dp op header dp <VALS> pc <TAG> cp
-	 * <RADIOBUTTONS>		-> <RADIOBUTTON> <RADIOBUTTONS> | $
-	 * <RADIOBUTTON>		-> radiobutton dp op <ATTRS> cp
-	 * <ATTRS>				-> <ATTR> <ATTRS> | $
-	 * <ATTR>				-> attr dp <VALS> pc
+	 * <ATTRS>				-> attr dp <VALS> pc <ATTR> | $
 	 *
 	 * <VALS>				-> <VAL> | <VAL> coma <VALS>
-	 * <VAL>				-> bool | tdecor | align | effect | animation | charset | integer 
-	 *						-> real | text | definetype | measure | none 
+	 * <VAL>				-> val | color | text | var | int | id | measure | bool
 	 *
 	 *********************************************************************************************************/
 	
