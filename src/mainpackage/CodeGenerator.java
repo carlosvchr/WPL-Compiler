@@ -100,12 +100,6 @@ public class CodeGenerator {
 		
 		String s[] = new String[2];
 		switch(tag) {
-		case Lexer._box:
-			currentLine = "<div class=\"w3-display-container\">";
-			s[0] = Lexer._box;
-			s[1] = "</div>";
-			containerStack.push(s);
-			break;
 		case Lexer._hbox:
 			currentLine = "<div>";
 			s[0] = Lexer._hbox;
@@ -118,27 +112,27 @@ public class CodeGenerator {
 			s[1] = "</div>";
 			containerStack.push(s);
 			break;
-		case Lexer._sidebox:
+		case Lexer._sidebar:
 			currentLine = "<div class=\"w3-sidebar w3-bar-block\">";
-			s[0] = Lexer._sidebox;
+			s[0] = Lexer._sidebar;
 			s[1] = "</div>";
 			containerStack.push(s);
 			break;
-		case Lexer._modalbox:
+		case Lexer._modal:
 			currentLine = "<div class=\"w3-modal\"><div class=\"w3-modal-container\">";
-			s[0] = Lexer._modalbox;
+			s[0] = Lexer._modal;
 			s[1] = "</div>";
 			containerStack.push(s);
 			break;
-		case Lexer._tablebox:
+		case Lexer._table:
 			currentLine = "<table>";
-			s[0] = Lexer._tablebox;
+			s[0] = Lexer._table;
 			s[1] = "</table>";
 			containerStack.push(s);
 			break;
-		case Lexer._dropdownbox:
+		case Lexer._dropdown:
 			currentLine = "<div class=\"w3-dropdown-click\">";
-			s[0] = Lexer._dropdownbox;
+			s[0] = Lexer._dropdown;
 			s[1] = "</div>";
 			containerStack.push(s);
 			break;
@@ -149,15 +143,9 @@ public class CodeGenerator {
 			s[1] = "</div>";
 			containerStack.push(s);
 			break;
-		case Lexer._accordionbox:
+		case Lexer._accordion:
 			currentLine = "<div>";
-			s[0] = Lexer._accordionbox;
-			s[1] = "</div>";
-			containerStack.push(s);
-			break;
-		case Lexer._slideshow:
-			currentLine = "<div>";
-			s[0] = Lexer._slideshow;
+			s[0] = Lexer._accordion;
 			s[1] = "</div>";
 			containerStack.push(s);
 			break;
@@ -216,57 +204,6 @@ public class CodeGenerator {
 			s[1] = "</div>";
 			containerStack.push(s);
 			break;
-		case Lexer._progressbar:
-			currentLine = "<div>";
-			s[0] = Lexer._progressbar;
-			s[1] = "</div>";
-			containerStack.push(s);
-			break;
-		case Lexer._item:
-			switch(getCurrent()) {
-			case Lexer._tablebox:
-				currentLine = "<tr>";
-				s[0] = Lexer._item;
-				s[1] = "</tr>";
-				containerStack.push(s);
-				break;
-			case Lexer._dropdownbox:
-			case Lexer._tabbedbox:
-				itemcont++;
-				tabbedBar += tabs(2)+"<a class=\"w3-cell\" onclick=\"openTab('tabindicator"+tabbedboxs+"', 'tind"+itemcont+"', 'tab"+itemcont+"', 'tabbedbox"+tabbedboxs+"')\">"+
-						"<div id=\"tind"+itemcont+"\" class=\"tablink w3-bottombar w3-hover-light-grey w3-padding tabindicator"+tabbedboxs+"\">Click</div>"+"</a>\n";
-				currentLine = "<div>";
-				addClass("tabbedbox"+tabbedboxs);
-				addAttr("id=\"tab"+itemcont+"\"");
-				addStyle("display:none");
-				s[0] = Lexer._item;
-				s[1] = "</div>";
-				containerStack.push(s);
-				break;
-			case Lexer._slideshow:
-			case Lexer._accordionbox:
-			default:
-				currentLine = "<div>";
-				s[0] = Lexer._item;
-				s[1] = "</div>";
-				containerStack.push(s);
-				break;
-			}
-			break;
-		}
-		
-		// Comprobamos en qué contenedor estamos para heredar los atributos del contenedor padre
-		switch(getParent()) {
-		case Lexer._hbox:
-			break;
-		case Lexer._item:
-			switch(getGrandParent()) {
-			case Lexer._tablebox:
-				currentLine = "<td>"+currentLine;
-				String[] it = {containerStack.peekFirst()[0], containerStack.pop()[1]+"</td>"};
-				containerStack.push(it);
-			}		
-			break;
 		}
 		
 	}
@@ -313,23 +250,20 @@ public class CodeGenerator {
 			case Lexer._bottom: addClass("w3-display-bottommiddle"); break;
 			case Lexer._right: addClass("w3-display-right"); break;
 			case Lexer._left: addClass("w3-display-left"); break;
-			case Lexer._top_left: addClass("w3-display-topleft"); break;
-			case Lexer._top_right: addClass("w3-display-topright"); break;
-			case Lexer._bottom_left: addClass("w3-display-bottomleft"); break;
-			case Lexer._bottom_right: addClass("w3-display-bottomright"); break;
+			case Lexer._topleft: addClass("w3-display-topleft"); break;
+			case Lexer._topright: addClass("w3-display-topright"); break;
+			case Lexer._bottomleft: addClass("w3-display-bottomleft"); break;
+			case Lexer._bottomright: addClass("w3-display-bottomright"); break;
 			case Lexer._center: addClass("w3-display-middle"); break;
 			}
 			break;
-		case Lexer._type:
 		case Lexer._placeholder:
 			addAttr("placeholder=\""+values[0]+"\"");
 			break;
-		case Lexer._header:
-			break;
-		case Lexer._text_align:
+		case Lexer._textalign:
 			addStyle("text-align:"+values[0]);
 			break;
-		case Lexer._text_decoration:
+		case Lexer._textdecoration:
 			String textDecoration = "";
 			for(int i=0; i<values.length; i++) {
 				switch(values[i]) {
@@ -344,37 +278,37 @@ public class CodeGenerator {
 				addStyle("text-decoration:"+textDecoration);
 			}
 			break;
-		case Lexer._text_color:
+		case Lexer._textcolor:
 			addStyle("color:"+values[0]);
 			break;
 		case Lexer._text:
 			currentContent += values[0];
 			break;
-		case Lexer._font_size:
+		case Lexer._fontsize:
 			addStyle("font-size:"+values[0]);
 			break;
-		case Lexer._font_family:
+		case Lexer._fontfamily:
 			addStyle("font-family:'"+values[0]+"'");
 			break;
 		case Lexer._animation:
 			switch(values[0]) {
 			case Lexer._zoom: addClass("w3-animate-zoom"); break;
 			case Lexer._fading: addClass("w3-animate-fading"); break;
-			case Lexer._fade_in: addClass("w3-animate-opacity"); break;
+			case Lexer._fadein: addClass("w3-animate-opacity"); break;
 			case Lexer._spin: addClass("w3-spin"); break;
-			case Lexer._move_up: addClass("w3-animate-top"); break;
-			case Lexer._move_down: addClass("w3-animate-bottom"); break;
-			case Lexer._move_right: addClass("w3-animate-right"); break;
-			case Lexer._move_left: addClass("w3-animate-left"); break;
+			case Lexer._moveup: addClass("w3-animate-top"); break;
+			case Lexer._movedown: addClass("w3-animate-bottom"); break;
+			case Lexer._moveright: addClass("w3-animate-right"); break;
+			case Lexer._moveleft: addClass("w3-animate-left"); break;
 			}
 			break;
 		case Lexer._bgcolor:
 			addStyle("background-color:"+values[0]);
 			break;
-		case Lexer._border_color:
+		case Lexer._bordercolor:
 			addStyle("border-color:"+values[0]);
 			break;
-		case Lexer._border_radius:
+		case Lexer._borderradius:
 			addStyle("border-radius:"+getJoined(values));
 			break;
 		case Lexer._border:
@@ -386,14 +320,14 @@ public class CodeGenerator {
 		case Lexer._effect:
 			switch(values[0]) {
 			case Lexer._opacity: addClass("w3-opacity"); break;
-			case Lexer._opacity_min: addClass("w3-opacity-min"); break;
-			case Lexer._opacity_max: addClass("w3-opacity-max"); break;
+			case Lexer._opacitymin: addClass("w3-opacity-min"); break;
+			case Lexer._opacitymax: addClass("w3-opacity-max"); break;
 			case Lexer._sepia: addClass("w3-sepia"); break;
-			case Lexer._sepia_min: addClass("w3-sepia-min"); break;
-			case Lexer._sepia_max: addClass("w3-sepia-max"); break;
+			case Lexer._sepiamin: addClass("w3-sepia-min"); break;
+			case Lexer._sepiamax: addClass("w3-sepia-max"); break;
 			case Lexer._grayscale: addClass("w3-grayscale"); break;
-			case Lexer._grayscale_min: addClass("w3-grayscale-min"); break;
-			case Lexer._grayscale_max: addClass("w3-grayscale-max"); break;
+			case Lexer._grayscalemin: addClass("w3-grayscale-min"); break;
+			case Lexer._grayscalemax: addClass("w3-grayscale-max"); break;
 			}
 			break;
 		case Lexer._elevation:
@@ -417,21 +351,12 @@ public class CodeGenerator {
 		case Lexer._padding:
 			addStyle("padding:"+getJoined(values));
 			break;
-		case Lexer._slots:
 		case Lexer._tooltip:
 			addAttr("title="+values[0]);
 			break;
 		case Lexer._width:
 			addStyle("width:"+values[0]);
 			break;
-		case Lexer._closable:
-			currentContent += "<span onclick=\"this.parentElement.style.display='none'\" class=\"w3-button w3-display-right\">&times</span>";
-			break;
-		case Lexer._delay:
-		case Lexer._slide_controls:
-		case Lexer._indicators:
-		case Lexer._caption_position:
-		case Lexer._caption:
 		case Lexer._selected:
 			// if parent is checkbox ... else if is radiobutton ...
 		}

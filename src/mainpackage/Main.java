@@ -10,12 +10,12 @@ public class Main {
 
 	public static void main(String[] args) {
 		String path = "/home/carlos/Escritorio/pruebas.txt";
-		String output = "/home/carlos/Escritorio/pruebasOutput.html";
+//		String output = "/home/carlos/Escritorio/pruebasOutput.html";
 		
-		SyntacticAnalyzer syntacticAnalyzer = new SyntacticAnalyzer(path, output);
-		syntacticAnalyzer.start();
+//		SyntacticAnalyzer syntacticAnalyzer = new SyntacticAnalyzer(path, output);
+//		syntacticAnalyzer.start();
 		
-		//testLexical(path);
+		testLexical(path);
 	}
 
 	
@@ -28,8 +28,6 @@ public class Main {
 		while((s = la.next()) != null) {	
 				System.out.println(s.sym()+putSpaces(20-s.sym().length())+(s.val()!=null ? s.val():""));
 		}
-		
-		System.out.println(REManager.validate("^\\t", "	a"));
 	}
 	
 	/** devuelve una cadena de texto compuesta por 'n' espacios */

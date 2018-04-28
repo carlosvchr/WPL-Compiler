@@ -3,11 +3,13 @@ package mainpackage;
 public class Lexer {
 	
 	// Custom
+	public static final String __blank = "blank";
+	public static final String __comment = "comment";
 	public static final String __var = "var";
 	public static final String __measure = "measure";
 	public static final String __integer = "integer";
 	public static final String __identifier = "identifier";
-	public static final String __text = "define";
+	public static final String __text = "text";
 	public static final String __color = "color";
 	public static final String __dp = "dp";
 	public static final String __pc = "pc";
@@ -57,6 +59,7 @@ public class Lexer {
 	public static final String _bordercolor = "border-color";
 	public static final String _borderradius = "border-radius";
 	public static final String _charset = "charset";
+	public static final String _collapsible = "collapsible";
 	public static final String _class = "class";
 	public static final String _controls = "controls";
 	public static final String _description = "description";
@@ -105,6 +108,7 @@ public class Lexer {
 	public static final String _center = "center";
 	public static final String _fadein = "fade-in";
 	public static final String _fading = "fading";
+	public static final String _false = "false";
 	public static final String _floating = "floating";
 	public static final String _grayscale = "grayscale";
 	public static final String _grayscalemax = "grayscale-max";
@@ -130,21 +134,26 @@ public class Lexer {
 	public static final String _top = "top";
 	public static final String _topleft = "top-left";
 	public static final String _topright = "top-right";
+	public static final String _true = "true";
 	public static final String _underline = "underline";
 	public static final String _zoom = "zoom";
 	
 	public static String[][] lexer = {
+			{__blank,			"^\\s"},
+			{__comment,			"^(##[^#]*#)"},
 			{__dp,				"^:"},	
-			{_import,			"^"+_import},			
+			{_import,			"^("+_import+")"},			
 			{__meta,			"^(("+_author+")|("+_keywords+")|("+_lang+")|("+_redirect+")|("+_pageicon+")|"+
 								"("+_title+")|("+_charset+")|("+_description+"))"},			
-			{_define,			"^"+_define},			
-			{_include,			"^"+_include},	
+			{_define,			"^("+_define+")"},			
+			{_include,			"^("+_include+")"},	
 			{__container,		"^(("+_accordion+")|("+_dropdown+")|("+_hbox+")|("+_modal+")|("+_sidebar+")|"+
-								"("+_tabbedbox+")|("+_table+")|("+_vbox+"))"},			
+								"("+_tabbedbox+")|("+_table+")|("+_vbox+"))"},
+			{_row,				"^("+_row+")"},
+			{_hrow,				"^("+_hrow+")"},
 			{__component,		"^(("+_audio+")|("+_button+")|("+_checkbox+")|("+_image+")|("+_label+")|"+
 								"("+_radiobutton+")|("+_separator+")|("+_textfield+")|("+_video+"))"},			
-			{__attr,			"^(("+_align+")|("+_alt+")|("+_animation+")|("+_author+")|("+_autoplay+")|"+
+			{__attr,			"^(("+_align+")|("+_alt+")|("+_animation+")|("+_author+")|("+_autoplay+")|("+_collapsible+")|"+
 								"("+_bgcolor+")|("+_bordercolor+")|("+_borderradius+")|("+_border+")|("+_charset+")|"+
 								"("+_class+")|("+_controls+")|("+_description+")|("+_dropdowntype+")|("+_effect+")|"+
 								"("+_elevation+")|("+_fontfamily+")|("+_fontsize+")|("+_height+")|("+_id+")|"+
@@ -154,19 +163,19 @@ public class Lexer {
 								"("+_selected+")|("+_sidebartype+")|("+_src+")|("+_spacing+")|("+_tabcolor+")|"+
 								"("+_tabs+")|("+_textalign+")|("+_textcolor+")|("+_textdecoration+")|("+_text+")|"+
 								"("+_title+")|("+_tooltip+")|("+_width+"))"},			
-			{__val,				"^(("+_bold+")|("+_bottomright+")|("+_bottomleft+")|("+_bottom+")|("+_clickable+")"+
-								"("+_center+")|("+_fadein+")|("+_fading+")|("+_floating+")|("+_grayscalemin+")"+
-								"("+_grayscalemax+")|("+_grayscale+")|("+_hoverable+")|("+_italic+")|("+_left+")"+
-								"("+_movedown+")|("+_moveleft+")|("+_moveright+")|("+_moveup+")|("+_opacitymin+")"+
-								"("+_opacitymax+")|("+_opacity+")|("+_overline+")|("+_right+")|("+_sepiamin+")"+
-								"("+_sepiamax+")|("+_sepia+")|("+_sliding+")|("+_spin+")|("+_strikethrough+")"+
+			{__val,				"^(("+_bold+")|("+_bottomright+")|("+_bottomleft+")|("+_bottom+")|("+_clickable+")|"+
+								"("+_center+")|("+_fadein+")|("+_fading+")|("+_floating+")|("+_grayscalemin+")|"+
+								"("+_grayscalemax+")|("+_grayscale+")|("+_hoverable+")|("+_italic+")|("+_left+")|"+
+								"("+_movedown+")|("+_moveleft+")|("+_moveright+")|("+_moveup+")|("+_opacitymin+")|"+
+								"("+_opacitymax+")|("+_opacity+")|("+_overline+")|("+_right+")|("+_sepiamin+")|"+
+								"("+_sepiamax+")|("+_sepia+")|("+_sliding+")|("+_spin+")|("+_strikethrough+")|"+
 								"("+_topright+")|("+_topleft+")|("+_top+")|("+_underline+")|("+_zoom+"))"},			
-			{__var,				"^($[a-zA-Z_][a-zA-Z0-9_-])"},			
-			{__text,			"^(\"^[\"]\")"},			
-			{__color,			"^(#[0-9a-fA-F]{6})"},			
+			{__var,				"^(\\$[a-zA-Z_][a-zA-Z0-9_-]*)"},			
+			{__text,			"^(\"[^\"]*\")"},			
+			{__color,			"^(\\#[0-9a-fA-F]{6})"},			
 			{__integer,			"^(0|([1-9][0-9]*))"},			
 			{__measure,			"^((0|[1-9][0-9]*)((px)|(%)))"},			
-			{__bool,			"^((true)|(false))"},			
+			{__bool,			"^(("+_true+")|("+_false+"))"},			
 			{__identifier,		"^([a-zA-Z_][a-zA-Z0-9_-])"}
 	};
 

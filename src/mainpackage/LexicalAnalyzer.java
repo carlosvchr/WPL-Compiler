@@ -8,8 +8,6 @@ public class LexicalAnalyzer {
 	private final String CP = "cp";
 	private final String DP = "dp";
 	private final String PC = "pc";
-	private final String COMMENT = "comment";
-	private final String SKIP = "s";
 	private final String BR = "+";
 	
 	/* Como es posible que varias categorias puedan generar la
@@ -142,14 +140,14 @@ public class LexicalAnalyzer {
 			line = line.substring(maxMatch, line.length());
 			
 			// Los comentarios los descartamos
-			if(Lexer.lexer[index][0].compareTo(COMMENT) == 0) {
-				return next();
-			}
+//			if(Lexer.lexer[index][0].compareTo(COMMENT) == 0) {
+//				return next();
+//			}
 			
 			// Los espacios los descartamos, entonces devolvemos la siguiente ocurrencia
-			if(Lexer.lexer[index][0].compareTo(SKIP) == 0) {
-				return next();
-			}
+//			if(Lexer.lexer[index][0].compareTo(SKIP) == 0) {
+//				return next();
+//			}
 			
 			// Por último retornamos el símbolo de la categoría que hizo mejor coincidencia
 			history = new Symbol(Lexer.lexer[index][0], bestMatch);
@@ -201,11 +199,6 @@ public class LexicalAnalyzer {
 				line += cline;
 			}catch(IOException ioe) {
 				ioe.printStackTrace();
-			}
-			
-			// Eliminamos las lineas que son comentarios
-			if(line.trim().startsWith(Lexer.symComment)) {
-				return next();
 			}
 			
 			/* Lo primero es sustituir los tabuladores por conjuntos de 4 espacios 
