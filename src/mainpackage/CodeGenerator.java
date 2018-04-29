@@ -281,9 +281,6 @@ public class CodeGenerator {
 		case Lexer._textcolor:
 			addStyle("color:"+values[0]);
 			break;
-		case Lexer._text:
-			currentContent += values[0];
-			break;
 		case Lexer._fontsize:
 			addStyle("font-size:"+values[0]);
 			break;

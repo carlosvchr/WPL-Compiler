@@ -249,6 +249,13 @@ public class LexicalAnalyzer {
 		}
 	}
 	
+	/** Devuelve el siguiente símbolo pero lo devuelve a la pila. Tiene fines de comprobación */
+	public Symbol nextAndUndo() {
+		Symbol s = next();
+		undo();
+		return s;
+	}
+	
 	/** Devuelve la línea que se está analizando en un momento determinado */
 	public long getLineNumber() {
 		return inputFile.getLineNumber();
