@@ -47,7 +47,7 @@ public class SyntacticAnalyzer {
 	LexicalAnalyzer lex = null;
 //	
 //	// Analizador semantico que comprobara que los valores asociados a los atributos son correctos
-//	SemanticAnalyzer sem = null;
+	SemanticAnalyzer sem = null;
 //	
 //	// CodeGenerator es la clase que genera el código
 //	CodeGenerator generator = null;
@@ -60,7 +60,7 @@ public class SyntacticAnalyzer {
 	 *  @param Fichero donde se genera el código */
 	public SyntacticAnalyzer(String path, String output) {
 //		generator = new CodeGenerator(output);
-//		sem = new SemanticAnalyzer();
+		sem = new SemanticAnalyzer();
 		lex = new LexicalAnalyzer();
 		lex.start(path);
 	}
@@ -130,25 +130,15 @@ public class SyntacticAnalyzer {
 		
 		// Genera las etiquetas de apertura html
 //		generator.startHead();
-		
-		String sym = lex.nextAndUndo().sym();
-		if(first(NT.IMPORTS, sym))
-			analyzeImports();	
-		
-		sym = lex.nextAndUndo().sym();
-		if(first(NT.META, sym))
-			analyzeMeta();
-		
-		sym = lex.nextAndUndo().sym();
-		if(first(NT.DEFINES, sym))
-			analyzeDefines();
+			
+		analyze(NT.IMPORTS);
+		analyze(NT.META);
+		analyze(NT.DEFINES);
 		
 		// Genera la etiqueta de cierre del head y apertura del body
 //		generator.startBody();
 		
-		sym = lex.nextAndUndo().sym();
-		if(first(NT.TAG, sym))
-			analyzeTags();
+		analyze(NT.TAG);
 		
 		if(lex.nextAndUndo().sym() != Lexer.__end) {
 			printSyntacticError("$ program");
