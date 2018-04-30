@@ -14,7 +14,7 @@ public class SemanticAnalyzer {
 			if(val.length != 1) {
 				printTooMuchValuesError();
 				return false;
-			}else if(val[0].sym().compareTo(Lexer._text) != 0) {
+			}else if(val[0].sym().compareTo(Lexer.__text) != 0) {
 				printSemanticError();
 				return false;
 			}else {
@@ -24,7 +24,7 @@ public class SemanticAnalyzer {
 			if(val.length != 2) {
 				printTooMuchValuesError();
 				return false;
-			}else if(val[0].sym().compareTo(Lexer._text) != 0 || val[1].sym().compareTo(Lexer.__integer) != 0) {
+			}else if(val[0].sym().compareTo(Lexer.__text) != 0 || val[1].sym().compareTo(Lexer.__integer) != 0) {
 				printSemanticError();
 				return false;
 			}else{
@@ -44,7 +44,7 @@ public class SemanticAnalyzer {
 			if(val.length != 1) {
 				printTooMuchValuesError();
 				return false;
-			}else if(val[0].sym() != Lexer._text) {
+			}else if(val[0].sym() != Lexer.__text) {
 				printSemanticError();
 				return false;
 			}else {

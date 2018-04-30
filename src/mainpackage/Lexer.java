@@ -3,6 +3,7 @@ package mainpackage;
 public class Lexer {
 	
 	// Custom
+	public static final String __end = "end";
 	public static final String __blank = "blank";
 	public static final String __comment = "comment";
 	public static final String __var = "var";
@@ -147,7 +148,8 @@ public class Lexer {
 			{_define,			"^("+_define+")"},			
 			{_include,			"^("+_include+")"},	
 			{__container,		"^(("+_accordion+")|("+_dropdown+")|("+_hbox+")|("+_modal+")|("+_sidebar+")|"+
-								"("+_tabbedbox+")|("+_table+")|("+_vbox+"))"},
+								"("+_tabbedbox+")|("+_vbox+"))"},
+			{_table,			"^("+_table+")"},
 			{_row,				"^("+_row+")"},
 			{_hrow,				"^("+_hrow+")"},
 			{__component,		"^(("+_audio+")|("+_button+")|("+_checkbox+")|("+_image+")|("+_label+")|"+

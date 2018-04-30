@@ -16,11 +16,11 @@ public class SyntacticAnalyzer {
 	 * <TAG>				-> <CONTAINER> | <TABLE> | <COMPONENT> | <INCLUDE>
 	 *
 	 * <CONTAINER>			-> container dp op <ATTRS> <TAGS> cp
-	 * <TABLE>				-> table dp op <HROW> <ROWS> cp
+	 * <TABLE>				-> table dp op <ATTRS> <HROW> <ROWS> cp
 	 * <HROW>				-> hrow dp op <TAGS> cp | $
 	 * <ROWS>				-> row dp op <TAGS> cp <ROWS> | $
-	 * <COMPONENT>			-> component <VAL> dp op <ATTRS> cp
-	 * <INCLUDE>			-> include <VALS> pc
+	 * <COMPONENT>			-> component dp text? (op <ATTRS> cp)?
+	 * <INCLUDE>			-> include dp <VALS> pc
 	 *
 	 * <ATTRS>				-> attr dp <VALS> pc <ATTRS> | $
 	 *
@@ -41,7 +41,7 @@ public class SyntacticAnalyzer {
 	
 	/** No terminales */
 	private enum NT { META, IMPORTS, DEFINES, TAG, CONTAINER, TABLE, HROW,
-					ROWS, COMPONENT, INCLUDE, ATTRS, VALS, VAL, VALNULLABLE }
+					ROWS, COMPONENT, INCLUDE, ATTRS, VALS }
 
 	// Analizador léxico al que iremos requiriendo símbolos
 	LexicalAnalyzer lex = null;
@@ -92,9 +92,15 @@ public class SyntacticAnalyzer {
 			return (t.compareTo(Lexer._import) == 0);
 		case DEFINES:
 			return (t.compareTo(Lexer._define) == 0);
+		case TABLE:
+			return (t.compareTo(Lexer._table) == 0);
+		case HROW:
+			return (t.compareTo(Lexer._hrow) == 0);
+		case ROWS:
+			return (t.compareTo(Lexer._row) == 0);
 		case TAG:
-			return (t.compareTo(Lexer.__container) == 0 || t.compareTo(Lexer._table) == 0 || 
-					t.compareTo(Lexer.__component) == 0 || t.compareTo(Lexer._include) == 0);
+			return (t.compareTo(Lexer.__container) == 0 || t.compareTo(Lexer.__component) == 0 || 
+					t.compareTo(Lexer._include) == 0) || t.compareTo(Lexer._table) == 0;
 		case CONTAINER:
 			return (t.compareTo(Lexer.__container) == 0);
 		case COMPONENT:
@@ -103,8 +109,7 @@ public class SyntacticAnalyzer {
 			return (t.compareTo(Lexer._include) == 0);
 		case ATTRS:
 			return (t.compareTo(Lexer.__attr) == 0);
-		case VALNULLABLE:
-		case VAL:
+		case VALS:
 			return (t.compareTo(Lexer.__val) == 0 || t.compareTo(Lexer.__var) == 0 || 
 					t.compareTo(Lexer.__text) == 0 || t.compareTo(Lexer.__color) == 0 || 
 					t.compareTo(Lexer.__integer) == 0 || t.compareTo(Lexer.__measure) == 0 || 
@@ -116,31 +121,8 @@ public class SyntacticAnalyzer {
 	/** Comprueba si un terminal forma parte de los siguientes de un no terminal 
 	 * TODO: Esta funcion esta sin hacer, los datos corresponden a los de la funcion first()*/
 	private boolean following(NT nt, String t) {
-		switch (nt){
-		case META:
-			return (t.compareTo(Lexer.__meta) == 0);
-		case IMPORTS:
-			return (t.compareTo(Lexer._import) == 0);
-		case DEFINES:
-			return (t.compareTo(Lexer._define) == 0);
-		case TAG:
-			return (t.compareTo(Lexer.__container) == 0 || t.compareTo(Lexer._table) == 0 || 
-					t.compareTo(Lexer.__component) == 0 || t.compareTo(Lexer._include) == 0);
-		case CONTAINER:
-			return (t.compareTo(Lexer.__container) == 0);
-		case COMPONENT:
-			return (t.compareTo(Lexer.__component) == 0);
-		case INCLUDE:
-			return (t.compareTo(Lexer._include) == 0);
-		case ATTRS:
-			return (t.compareTo(Lexer.__attr) == 0);
-		case VAL:
-			return (t.compareTo(Lexer.__val) == 0 || t.compareTo(Lexer.__var) == 0 || 
-					t.compareTo(Lexer.__text) == 0 || t.compareTo(Lexer.__color) == 0 || 
-					t.compareTo(Lexer.__integer) == 0 || t.compareTo(Lexer.__measure) == 0 || 
-					t.compareTo(Lexer.__bool) == 0 || t.compareTo(Lexer.__identifier) == 0 );
-		default: return false;
-		}
+		
+		return false;
 	}
 	
 	/** <PROGRAM> -> <IMPORTS> <META> <DEFINES> <TAG> */
@@ -168,7 +150,7 @@ public class SyntacticAnalyzer {
 		if(first(NT.TAG, sym))
 			analyzeTags();
 		
-		if(lex.nextAndUndo() != null) {
+		if(lex.nextAndUndo().sym() != Lexer.__end) {
 			printSyntacticError("$ program");
 			return false;
 		}
@@ -216,125 +198,147 @@ public class SyntacticAnalyzer {
 	
 	/** <IMPORTS> -> import dp <VALS> pc <IMPORTS> | $ */
 	private void analyzeImports() {	
-		analyze(Lexer._import);
-		analyze(Lexer.__dp);
+		analyze(Lexer._import, false);
+		analyze(Lexer.__dp, false);
 		analyze(NT.VALS);
-		analyze(Lexer.__pc);
+		analyze(Lexer.__pc, false);
 		analyze(NT.IMPORTS);
 	}
 	
 	/** <META> -> meta dp <VALS> pc <META> | $*/
 	private void analyzeMeta() {
-		analyze(Lexer.__meta);
-		analyze(Lexer.__dp);
+		analyze(Lexer.__meta, false);
+		analyze(Lexer.__dp, false);
 		analyze(NT.VALS);
-		analyze(Lexer.__pc);
+		analyze(Lexer.__pc, false);
 		analyze(NT.META);
 	}
 		
 	/** <DEFINES> -> define dp <VALS> pc <DEFINES> | $ */
 	private void analyzeDefines() {
-		if(!analyze(Lexer._define)) return;
-		if(!analyze(Lexer.__dp)) return;
+		if(!analyze(Lexer._define, false)) return;
+		if(!analyze(Lexer.__dp, false)) return;
 		if(!analyze(NT.VALS)) return;
-		if(!analyze(Lexer.__pc)) return;
+		if(!analyze(Lexer.__pc, false)) return;
 		analyze(NT.DEFINES);
 	}
 	
 	/** <TAGS> -> <TAG> <TAGS> | $
 	 * <TAG> -> <CONTAINER> | <TABLE> | <COMPONENT> | <INCLUDE> */
 	private void analyzeTags() {
-		analyze(NT.CONTAINER);
-		analyze(NT.COMPONENT);
-		analyze(NT.TABLE);
-		analyze(NT.DEFINES);
+		if(analyze(NT.CONTAINER));
+		else if(analyze(NT.COMPONENT));
+		else if(analyze(NT.TABLE));
+		else if(analyze(NT.DEFINES));
+		else printSyntacticError("TAGS");
 		analyze(NT.TAG);
 	}
 	
 	/** <CONTAINER> -> container dp op <ATTRS> <TAGS> cp */
 	private void analyzeContainer() {
-		analyze(Lexer.__container);
-		analyze(Lexer.__dp);
-		analyze(Lexer.__op);
+		analyze(Lexer.__container, false);
+		analyze(Lexer.__dp, false);
+		analyze(Lexer.__op, false);
 		analyze(NT.ATTRS);
 		analyze(NT.TAG);
-		analyze(Lexer.__cp);
+		analyze(Lexer.__cp, false);
 	}
 	
-	/** <TABLE> -> table dp op <HROW> <ROWS> cp */
+	/** <TABLE> -> table dp op <ATTRS> <HROW> <ROWS> cp */
 	private void analyzeTable() {
-		analyze(Lexer._table);
-		analyze(Lexer.__dp);
-		analyze(Lexer.__op);
+		analyze(Lexer._table, false);
+		analyze(Lexer.__dp, false);
+		analyze(Lexer.__op, false);
+		analyze(NT.ATTRS);
 		analyze(NT.HROW);
 		analyze(NT.ROWS);
-		analyze(Lexer.__cp);
+		analyze(Lexer.__cp, false);
 	}
 	
 	/** <HROW> -> hrow dp op <TAGS> cp | $ */
 	private void analyzeHrow() {
-		analyze(Lexer._hrow);
-		analyze(Lexer.__dp);
-		analyze(Lexer.__op);
+		analyze(Lexer._hrow, false);
+		analyze(Lexer.__dp, false);
+		analyze(Lexer.__op, false);
 		analyze(NT.TAG);
-		analyze(Lexer.__cp);
+		analyze(Lexer.__cp, false);
 	}
 	
 	/** <ROWS> -> row dp op <TAGS> cp <ROWS> | $ */
 	private void analyzeRows() {
-		analyze(Lexer._row);
-		analyze(Lexer.__dp);
-		analyze(Lexer.__op);
+		analyze(Lexer._row, false);
+		analyze(Lexer.__dp, false);
+		analyze(Lexer.__op, false);
 		analyze(NT.TAG);
-		analyze(Lexer.__cp);
+		analyze(Lexer.__cp, false);
 		analyze(NT.ROWS);
 	}
 	
-	/** <COMPONENT> -> component <VAL> dp op <ATTRS> cp */
+	/** <COMPONENT> -> component dp text? (op <ATTRS> cp)? */
 	private void analyzeComponent() {
-		analyze(Lexer.__component);
-		analyze(NT.VALNULLABLE);
-		analyze(Lexer.__dp);
-		analyze(Lexer.__op);
-		analyze(NT.ATTRS);
-		analyze(Lexer.__cp);
+		analyze(Lexer.__component, false);
+		analyze(Lexer.__dp, false);
+		analyze(Lexer.__text, true);
+		if(analyze(Lexer.__op, true)) {
+			analyze(NT.ATTRS);
+			analyze(Lexer.__cp, false);
+		}else {
+			lex.undo();
+			analyze(Lexer.__pc, false);
+		}
 	}
 	
-	/** <INCLUDE> -> include <VALS> pc */
+	/** <INCLUDE> -> include dp <VALS> pc */
 	private void analyzeIncludes() {
-		analyze(Lexer._include);
+		analyze(Lexer._include, false);
+		analyze(Lexer.__dp, false);
 		analyze(NT.VALS);
-		analyze(Lexer.__pc);
+		analyze(Lexer.__pc, false);
 	}
 	
 	/** <ATTRS> -> attr dp <VALS> pc <ATTRS> | $ */
 	private void analyzeAttrs() {
-		analyze(Lexer.__attr);
-		analyze(Lexer.__dp);
+		analyze(Lexer.__attr, false);
+		analyze(Lexer.__dp, false);
 		analyze(NT.VALS);
-		analyze(Lexer.__pc);
+		analyze(Lexer.__pc, false);
 		analyze(NT.ATTRS);
 	}
 	
 	/** <VALS> -> <VAL> | <VAL> <VALS>
-	 * <VAL>				-> val | color | text | var | int | id | measure | bool */
+	 * <VAL> -> val | color | text | var | int | id | measure | bool */
 	private void analyzeVals() {
-		analyze(Lexer.__val);
-		analyze(Lexer.__color);
-		analyze(Lexer.__text);
-		analyze(Lexer.__var);
-		analyze(Lexer.__integer);
-		analyze(Lexer.__identifier);
-		analyze(Lexer.__measure);
-		analyze(Lexer.__bool);
+		if(analyze(Lexer.__val, false));
+		else if(analyze(Lexer.__color, false));
+		else if(analyze(Lexer.__text, false));
+		else if(analyze(Lexer.__var, false));
+		else if(analyze(Lexer.__integer, false));
+		else if(analyze(Lexer.__identifier, false));
+		else if(analyze(Lexer.__measure, false));
+		else if(analyze(Lexer.__bool, false));
+		else printSyntacticError("VAL");
 		analyze(NT.VALS);
 	}
 	
 	
-	/** Analiza un terminal */
-	private boolean analyze(String terminal) {
-		if(lex.next().sym().compareTo(terminal) != 0) {
-			printSyntacticError(terminal);
+	/** Analiza un terminal, el terminal puede ser o no anulable */
+	private boolean analyze(String terminal, boolean nullable) {
+		String next = lex.next().sym();
+		switch(next) {
+		case Lexer.__val:
+		case Lexer.__var:
+		case Lexer.__bool:
+		case Lexer.__color:
+		case Lexer.__text:
+		case Lexer.__measure:
+		case Lexer.__integer:
+		case Lexer.__identifier:
+			next = Lexer.__val; break;
+		
+		}
+		if(next.compareTo(terminal) != 0) {
+			if(!nullable)
+				printSyntacticError(terminal);
 			return false;
 		}	
 		return true;
@@ -342,22 +346,39 @@ public class SyntacticAnalyzer {
 	
 	/** Analiza un no terminal */
 	private boolean analyze(NT nonterminal) {
-		boolean match = first(NT.VALS, lex.nextAndUndo().sym());
+		boolean match = first(nonterminal, lex.nextAndUndo().sym());
 		switch(nonterminal) {
-		case VALS:
-			if(match) {
-				analyzeVals();
-				return true;
-			}else {
-				printSyntacticError("VALS");
-				return false;
-			}
 		case META:
-			if(match) {	analyzeMeta(); return true;	}else {	return false; }
+			if(match) {	analyzeMeta(); return true; } else { return false; }
+		case IMPORTS:
+			if(match) {	analyzeImports(); return true; } else { return false; }
 		case DEFINES:
-			if(match) { analyzeDefines(); return true; }else { return false; }
-		default: return first(NT.VALS, lex.nextAndUndo().sym());
+			if(match) { analyzeDefines(); return true; } else { return false; }
+		case TAG:
+			if(match) {	analyzeTags(); return true; } else { return false; }
+		case CONTAINER:
+			if(match) {	analyzeContainer(); return true; } else { return false; }
+		case COMPONENT:
+			if(match) {	analyzeComponent(); return true; } else { return false; }
+		case INCLUDE:
+			if(match) {	analyzeIncludes(); return true; } else { return false; }
+		case ATTRS:
+			if(match) {	analyzeAttrs(); return true; } else { return false; }
+		case VALS:
+			if(match) {	analyzeVals(); return true; } else { return false; }
+		case TABLE:
+			if(match) {	analyzeTable(); return true; } else { return false; }
+		case HROW:
+			if(match) {	analyzeHrow(); return true; } else { return false; }
+		case ROWS:
+			if(match) {	analyzeRows(); return true; } else { return false; }
+		default: System.out.println("ERROR"); return false;
 		}
+	}
+	
+	
+	public void print(String s) {
+		System.out.println(s);
 	}
 	
 }

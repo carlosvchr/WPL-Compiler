@@ -16,6 +16,8 @@ public class Main {
 		syntacticAnalyzer.start();
 		
 //		testLexical(path);
+		
+		System.out.println("Compilation successfully.");
 	}
 
 	

@@ -80,6 +80,7 @@ public class LexicalAnalyzer {
 	public Symbol next() {
 		// Primero comprobaremos si hay algún símbolo que deba ser emitido de nuevo
 		if(resendSymbol) {
+//			print(history.sym());
 			resendSymbol = false;
 			return history;
 		}
@@ -140,17 +141,18 @@ public class LexicalAnalyzer {
 			line = line.substring(maxMatch, line.length());
 			
 			// Los comentarios los descartamos
-//			if(Lexer.lexer[index][0].compareTo(COMMENT) == 0) {
-//				return next();
-//			}
+			if(Lexer.lexer[index][0].compareTo(Lexer.__comment) == 0) {
+				return next();
+			}
 			
 			// Los espacios los descartamos, entonces devolvemos la siguiente ocurrencia
-//			if(Lexer.lexer[index][0].compareTo(SKIP) == 0) {
-//				return next();
-//			}
+			if(Lexer.lexer[index][0].compareTo(Lexer.__blank) == 0) {
+				return next();
+			}
 			
 			// Por último retornamos el símbolo de la categoría que hizo mejor coincidencia
 			history = new Symbol(Lexer.lexer[index][0], bestMatch);
+//			print(history.sym());
 			return history;
 		
 		}else { // En caso contrario, cargamos la siguiente línea
@@ -174,8 +176,8 @@ public class LexicalAnalyzer {
 						history = new Symbol(CP, "}");
 						return history;
 					}else {
-						history = null;
-						return null;
+						history = new Symbol(Lexer.__end, Lexer.__end);
+						return history;
 					}
 				}
 				// Si es distinto de null, entonces leemos la linea
@@ -273,6 +275,7 @@ public class LexicalAnalyzer {
 	
 	/** Manda a reenviar el último símbolo emitido */
 	public void undo() {
+//		print("undo");
 		resendSymbol = true;
 	}
 	
@@ -283,5 +286,9 @@ public class LexicalAnalyzer {
 		}
 		return c;
 	}
+	
+//	public void print(String s) {
+//		System.out.println(s);
+//	}
 	
 }
