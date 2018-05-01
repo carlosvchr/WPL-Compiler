@@ -523,8 +523,8 @@ public class CodeGenerator {
 			}else {
 				currentLine = currentLine.substring(0, currentLine.length()-1)+" "+attr+">";
 			}
-			currentContent = "<span onclick=\"document.getElementById('"+clean(attr.split("=")[1])
-			+"').style.display='none'\" style=\"z-index:999;\" class=\"w3-button w3-display-topright\">&times;</span>";
+			currentContent = "<span onclick=\"closeModal('"+clean(attr.split("=")[1])+"')\" "+
+							"style=\"z-index:999;\" class=\"w3-button w3-display-topright\">&times;</span>";
 		}else {
 			currentLine = currentLine.substring(0, currentLine.length()-1)+" "+attr+">";
 		}
@@ -571,8 +571,12 @@ public class CodeGenerator {
 				tabs(3)+"document.getElementById(tid).className += \" w3-border-red\";\n" + 
 				tabs(2)+"}\n");
 		output.putLine(
-				tabs(2)+"function openModal(identificator) {\n" + 
-				tabs(3)+"document.getElementById(identificator).style.display='block';\n" + 
+				tabs(2)+"function openModal(identifier) {\n" + 
+				tabs(3)+"document.getElementById(identifier).style.display='block';\n" + 
+				tabs(2)+"}\n");
+		output.putLine(
+				tabs(2)+"function closeModal(identifier) {\n" + 
+				tabs(3)+"document.getElementById(identifier).style.display='none';\n" + 
 				tabs(2)+"}\n");
 	}
 	

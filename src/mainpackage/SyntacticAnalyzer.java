@@ -198,12 +198,14 @@ public class SyntacticAnalyzer {
 		analyze(NT.TAG);
 	}
 	
-	/** <CONTAINER> -> container dp op <ATTRS> <TAGS> cp */
+	/** <CONTAINER> -> container dp text? op <ATTRS> <TAGS> cp */
 	private void analyzeContainer() {
 		Symbol s = lex.nextAndUndo();
 		gen.openTag(s.val());
 		analyze(Lexer.__container, false);
 		analyze(Lexer.__dp, false);
+		Symbol stext = (lex.nextAndUndo().sym().compareTo(Lexer.__text)==0) ? lex.next() : null;
+		if(stext!=null) { gen.genAttrs(Lexer.__text, stext.val());}
 		analyze(Lexer.__op, false);
 		Symbol vals[] = analyze(NT.ATTRS);
 		sem.validate(s, vals);
