@@ -117,9 +117,9 @@ public class CodeGenerator {
 			containerStack.push(s);
 			break;
 		case Lexer._modal:
-			currentLine = "<div class=\"w3-modal\"><div class=\"w3-modal-container\">";
+			currentLine = "<div class=\"w3-modal\"><div class=\"w3-modal-content\"><div class=\"w3-container\">";
 			s[0] = Lexer._modal;
-			s[1] = "</div></div>";
+			s[1] = "</div></div></div>";
 			containerStack.push(s);
 			break;
 		case Lexer._sidebar:
@@ -405,7 +405,7 @@ public class CodeGenerator {
 			}
 			break;
 		case Lexer._tooltip:
-			addAttr("title="+values[0]);
+			addAttr("title=\""+values[0]+"\"");
 			break;
 		case Lexer._width:
 			addStyle("width:"+values[0]);
@@ -511,9 +511,23 @@ public class CodeGenerator {
 	}
 	
 	
-	/** Agrega un atributo a la etiqueta actual*/
+	/** Agrega un atributo a la etiqueta actual */
 	private void addAttr(String attr) {
-		currentLine = currentLine.substring(0, currentLine.length()-1)+" "+attr+">";
+		if(containerStack.peekFirst()[0].compareTo(Lexer._modal)==0) {
+			if(attr.startsWith("id")) {
+				String parts[] = currentLine.split("><");
+				currentLine = parts[0] + " " + attr;
+				for(int i=1; i<parts.length; i++) {
+					currentLine += "><" + parts[i];
+				}
+			}else {
+				currentLine = currentLine.substring(0, currentLine.length()-1)+" "+attr+">";
+			}
+			currentContent = "<span onclick=\"document.getElementById('"+clean(attr.split("=")[1])
+			+"').style.display='none'\" style=\"z-index:999;\" class=\"w3-button w3-display-topright\">&times;</span>";
+		}else {
+			currentLine = currentLine.substring(0, currentLine.length()-1)+" "+attr+">";
+		}
 	}
 	
 	
@@ -539,38 +553,6 @@ public class CodeGenerator {
 		return s;
 	}
 	
-	/** Obtiene la etiqueta actual */
-	private String getCurrent() {
-		String current = "";
-		if(containerStack.size() >= 1) {
-			return containerStack.peekFirst()[0];
-		}
-		return current;
-	}
-	
-	/** Obtiene la etiqueta padre de la actual */
-	private String getParent() {
-		String parent = "";
-		if(containerStack.size() >= 2) {
-			String[] current = containerStack.pop();
-			parent = containerStack.peekFirst()[0];
-			containerStack.push(current);
-		}
-		return parent;
-	}
-	
-	/** Obtiene la etiqueta que contiene a la etiqueta padre */
-	private String getGrandParent() {
-		String grandParent = "";
-		if(containerStack.size() >= 3) {
-			String[] current = containerStack.pop();
-			String[] parent = containerStack.pop();
-			grandParent = containerStack.peekFirst()[0];
-			containerStack.push(parent);
-			containerStack.push(current);
-		}
-		return grandParent;
-	}
 	
 	/** Genera las funciones predefinidas para el correcto funcionamiento de algunos componentes */
 	private void genPredefinedFunctions() {
@@ -587,6 +569,10 @@ public class CodeGenerator {
 				tabs(3)+"}\n" + 
 				tabs(3)+"document.getElementById(v).style.display = \"block\";\n" + 
 				tabs(3)+"document.getElementById(tid).className += \" w3-border-red\";\n" + 
+				tabs(2)+"}\n");
+		output.putLine(
+				tabs(2)+"function openModal(identificator) {\n" + 
+				tabs(3)+"document.getElementById(identificator).style.display='block';\n" + 
 				tabs(2)+"}\n");
 	}
 	
