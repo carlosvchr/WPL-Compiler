@@ -176,8 +176,8 @@ public class Lexer {
 			{__color,			"^(\\#[0-9a-fA-F]{6})"},			
 			{__integer,			"^(0|([1-9][0-9]*))"},			
 			{__measure,			"^((0|[1-9][0-9]*)((px)|(%)))"},			
-			{__bool,			"^(("+_true+")|("+_false+"))"},			
-			{__identifier,		"^([a-zA-Z_][a-zA-Z0-9_-])"}
+			{__bool,			"^(("+_true+")|("+_false+"))"}	
+			//{__identifier,		"^([a-zA-Z_][a-zA-Z0-9_-])"}
 	};
 
 }

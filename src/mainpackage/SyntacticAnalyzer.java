@@ -1,7 +1,5 @@
 package mainpackage;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 
 public class SyntacticAnalyzer {
 	
@@ -50,7 +48,7 @@ public class SyntacticAnalyzer {
 	SemanticAnalyzer sem = null;
 //	
 //	// CodeGenerator es la clase que genera el código
-//	CodeGenerator generator = null;
+	CodeGenerator generator = null;
 //	
 //	// Pila donde registramos las etiquetas abiertas para cerrarlas cuando llegue un cp
 //	ArrayDeque<Symbol> openedTagsStac;
@@ -59,9 +57,9 @@ public class SyntacticAnalyzer {
 	/** @param Fichero fuente 
 	 *  @param Fichero donde se genera el código */
 	public SyntacticAnalyzer(String path, String output) {
-//		generator = new CodeGenerator(output);
-		sem = new SemanticAnalyzer();
+		generator = new CodeGenerator(output);	
 		lex = new LexicalAnalyzer();
+		sem = new SemanticAnalyzer(lex);
 		lex.start(path);
 	}
 	
@@ -73,7 +71,7 @@ public class SyntacticAnalyzer {
 	/** Muestra un mensaje de error sintáctico */
 	private void printSyntacticError(String s) {
 		Symbol saux = lex.next();
-		System.err.println("Syntactic Analyzer: Error found on line "+lex.getLineNumber()+".: ..."+saux.val()+" ("+saux.sym()+"); Expected: "+s);
+		System.err.println("Syntactic error on line "+lex.getLineNumber()+". Found: "+saux.val()+"; Expected: "+s);
 	}
 	
 //	/** Intenta llegar a un punto seguro tras un error para retomar el análisis */
@@ -129,14 +127,14 @@ public class SyntacticAnalyzer {
 	private boolean analyzeProgram() {
 		
 		// Genera las etiquetas de apertura html
-//		generator.startHead();
+		generator.startHead();
 			
 		analyze(NT.IMPORTS);
 		analyze(NT.META);
 		analyze(NT.DEFINES);
 		
 		// Genera la etiqueta de cierre del head y apertura del body
-//		generator.startBody();
+		generator.startBody();
 		
 		analyze(NT.TAG);
 		
@@ -146,100 +144,75 @@ public class SyntacticAnalyzer {
 		}
 		
 		// Genera las etiquetas de cierre html
-//		generator.end();
+		generator.end();
 		
 		return true;
 	}
 	
-	
-//	/** <IMPORTS> -> import <VALS> pc <IMPORTS> | $ */
-//	private void analyzeImports() {	
-//		Symbol s = lex.nextAndUndo();
-//		
-//		if(s.sym().compareTo(Lexer._import) != 0) {
-//			printSyntacticError("import import");
-//			return;
-//		}
-//		
-//		s = lex.nextAndUndo();
-//		if(!first(NT.VALS, s.sym())) {
-//			printSyntacticError("val import");
-//			return;
-//		}else {
-//			Symbol[] r = analyzeVals();
-//			// Si no hay errores semanticos generamos el codigo
-////			if(sem.validate(importSym, r)) {
-////				generator.genImport(r[0].val());
-////			}
-//		}
-//		
-//		if(lex.next().sym().compareTo(Lexer.__pc) != 0) {
-//			printSyntacticError("PC import");
-//			return;
-//		}
-//		
-//		s = lex.nextAndUndo();
-//		if(first(NT.VALS, s.sym())) {
-//			analyzeImports();
-//		}
-//
-//	}
-	
-	
 	/** <IMPORTS> -> import dp <VALS> pc <IMPORTS> | $ */
 	private void analyzeImports() {	
+		Symbol s = lex.nextAndUndo();
 		analyze(Lexer._import, false);
-		analyze(Lexer.__dp, false);
-		analyze(NT.VALS);
+		analyze(Lexer.__dp, false);	
+		Symbol vals[] = analyze(NT.VALS);
+		sem.validate(s, vals);
 		analyze(Lexer.__pc, false);
 		analyze(NT.IMPORTS);
 	}
 	
 	/** <META> -> meta dp <VALS> pc <META> | $*/
 	private void analyzeMeta() {
+		Symbol s = lex.nextAndUndo();
 		analyze(Lexer.__meta, false);
 		analyze(Lexer.__dp, false);
-		analyze(NT.VALS);
+		Symbol vals[] = analyze(NT.VALS);
+		sem.validate(s,  vals);
 		analyze(Lexer.__pc, false);
 		analyze(NT.META);
 	}
 		
 	/** <DEFINES> -> define dp <VALS> pc <DEFINES> | $ */
 	private void analyzeDefines() {
-		if(!analyze(Lexer._define, false)) return;
-		if(!analyze(Lexer.__dp, false)) return;
-		if(!analyze(NT.VALS)) return;
-		if(!analyze(Lexer.__pc, false)) return;
+		Symbol s = lex.nextAndUndo();
+		analyze(Lexer._define, false);
+		analyze(Lexer.__dp, false);
+		Symbol vals[] = analyze(NT.VALS);
+		sem.validate(s,  vals);
+		analyze(Lexer.__pc, false);
 		analyze(NT.DEFINES);
 	}
 	
 	/** <TAGS> -> <TAG> <TAGS> | $
 	 * <TAG> -> <CONTAINER> | <TABLE> | <COMPONENT> | <INCLUDE> */
 	private void analyzeTags() {
-		if(analyze(NT.CONTAINER));
-		else if(analyze(NT.COMPONENT));
-		else if(analyze(NT.TABLE));
-		else if(analyze(NT.DEFINES));
+		if(analyze(NT.CONTAINER)!=null);
+		else if(analyze(NT.COMPONENT)!=null);
+		else if(analyze(NT.TABLE)!=null);
+		else if(analyze(NT.DEFINES)!=null);
 		else printSyntacticError("TAGS");
 		analyze(NT.TAG);
 	}
 	
 	/** <CONTAINER> -> container dp op <ATTRS> <TAGS> cp */
 	private void analyzeContainer() {
+		Symbol s = lex.nextAndUndo();
 		analyze(Lexer.__container, false);
 		analyze(Lexer.__dp, false);
 		analyze(Lexer.__op, false);
-		analyze(NT.ATTRS);
+		Symbol vals[] = analyze(NT.ATTRS);
+		sem.validate(s, vals);
 		analyze(NT.TAG);
 		analyze(Lexer.__cp, false);
 	}
 	
 	/** <TABLE> -> table dp op <ATTRS> <HROW> <ROWS> cp */
 	private void analyzeTable() {
+		Symbol s = lex.nextAndUndo();
 		analyze(Lexer._table, false);
 		analyze(Lexer.__dp, false);
 		analyze(Lexer.__op, false);
-		analyze(NT.ATTRS);
+		Symbol vals[] = analyze(NT.ATTRS);
+		sem.validate(s, vals);
 		analyze(NT.HROW);
 		analyze(NT.ROWS);
 		analyze(Lexer.__cp, false);
@@ -266,11 +239,13 @@ public class SyntacticAnalyzer {
 	
 	/** <COMPONENT> -> component dp text? (op <ATTRS> cp)? */
 	private void analyzeComponent() {
+		Symbol s = lex.nextAndUndo();
 		analyze(Lexer.__component, false);
 		analyze(Lexer.__dp, false);
 		analyze(Lexer.__text, true);
-		if(analyze(Lexer.__op, true)) {
-			analyze(NT.ATTRS);
+		if(analyze(Lexer.__op, true)!=null) {
+			Symbol vals[] = analyze(NT.ATTRS);
+			sem.validate(s, vals);
 			analyze(Lexer.__cp, false);
 		}else {
 			lex.undo();
@@ -280,40 +255,48 @@ public class SyntacticAnalyzer {
 	
 	/** <INCLUDE> -> include dp <VALS> pc */
 	private void analyzeIncludes() {
+		Symbol s = lex.nextAndUndo();
 		analyze(Lexer._include, false);
 		analyze(Lexer.__dp, false);
-		analyze(NT.VALS);
+		Symbol vals[] = analyze(NT.VALS);
+		sem.validate(s, vals);
 		analyze(Lexer.__pc, false);
 	}
 	
 	/** <ATTRS> -> attr dp <VALS> pc <ATTRS> | $ */
-	private void analyzeAttrs() {
+	private Symbol[] analyzeAttrs() {
+		Symbol at = lex.nextAndUndo();
 		analyze(Lexer.__attr, false);
 		analyze(Lexer.__dp, false);
-		analyze(NT.VALS);
+		Symbol v[] = analyze(NT.VALS);
+		sem.validate(at, v);
 		analyze(Lexer.__pc, false);
-		analyze(NT.ATTRS);
+		Symbol recAttrs[] = analyze(NT.ATTRS);
+		Symbol attrs[] = new Symbol[(recAttrs==null ? 1 : recAttrs.length+1)];
+		for(int i=1; i<attrs.length; i++) attrs[i] = recAttrs[i-1];
+		attrs[0] = at;
+		
+		return attrs;
 	}
 	
 	/** <VALS> -> <VAL> | <VAL> <VALS>
 	 * <VAL> -> val | color | text | var | int | id | measure | bool */
-	private void analyzeVals() {
-		if(analyze(Lexer.__val, false));
-		else if(analyze(Lexer.__color, false));
-		else if(analyze(Lexer.__text, false));
-		else if(analyze(Lexer.__var, false));
-		else if(analyze(Lexer.__integer, false));
-		else if(analyze(Lexer.__identifier, false));
-		else if(analyze(Lexer.__measure, false));
-		else if(analyze(Lexer.__bool, false));
-		else printSyntacticError("VAL");
-		analyze(NT.VALS);
+	private Symbol[] analyzeVals() {
+		Symbol ss = lex.nextAndUndo();
+		analyze(Lexer.__val, false);
+		Symbol[] recVals = analyze(NT.VALS);
+		Symbol values[] = new Symbol[(recVals==null ? 1 : recVals.length+1)];
+		for(int i=1; i<values.length; i++) values[i] = recVals[i-1];
+		values[0] = ss;
+		
+		return values;
 	}
 	
 	
 	/** Analiza un terminal, el terminal puede ser o no anulable */
-	private boolean analyze(String terminal, boolean nullable) {
-		String next = lex.next().sym();
+	private Symbol analyze(String terminal, boolean nullable) {
+		Symbol ns = lex.next();
+		String next = ns.sym();
 		switch(next) {
 		case Lexer.__val:
 		case Lexer.__var:
@@ -329,40 +312,41 @@ public class SyntacticAnalyzer {
 		if(next.compareTo(terminal) != 0) {
 			if(!nullable)
 				printSyntacticError(terminal);
-			return false;
+			return null;
 		}	
-		return true;
+		return ns;
 	}
 	
 	/** Analiza un no terminal */
-	private boolean analyze(NT nonterminal) {
+	private Symbol[] analyze(NT nonterminal) {
 		boolean match = first(nonterminal, lex.nextAndUndo().sym());
+		Symbol notnull[] = new Symbol[0];
 		switch(nonterminal) {
 		case META:
-			if(match) {	analyzeMeta(); return true; } else { return false; }
+			if(match) {	analyzeMeta(); return notnull; } else { return null; }
 		case IMPORTS:
-			if(match) {	analyzeImports(); return true; } else { return false; }
+			if(match) {	analyzeImports(); return notnull; } else { return null; }
 		case DEFINES:
-			if(match) { analyzeDefines(); return true; } else { return false; }
+			if(match) { analyzeDefines(); return notnull; } else { return null; }
 		case TAG:
-			if(match) {	analyzeTags(); return true; } else { return false; }
+			if(match) {	analyzeTags(); return notnull; } else { return null; }
 		case CONTAINER:
-			if(match) {	analyzeContainer(); return true; } else { return false; }
+			if(match) {	analyzeContainer(); return notnull; } else { return null; }
 		case COMPONENT:
-			if(match) {	analyzeComponent(); return true; } else { return false; }
+			if(match) {	analyzeComponent(); return notnull; } else { return null; }
 		case INCLUDE:
-			if(match) {	analyzeIncludes(); return true; } else { return false; }
+			if(match) {	analyzeIncludes(); return notnull; } else { return null; }
 		case ATTRS:
-			if(match) {	analyzeAttrs(); return true; } else { return false; }
+			if(match) {	return analyzeAttrs(); } else { return null; }
 		case VALS:
-			if(match) {	analyzeVals(); return true; } else { return false; }
+			if(match) {	return analyzeVals(); } else { return null; }
 		case TABLE:
-			if(match) {	analyzeTable(); return true; } else { return false; }
+			if(match) {	analyzeTable(); return notnull; } else { return null; }
 		case HROW:
-			if(match) {	analyzeHrow(); return true; } else { return false; }
+			if(match) {	analyzeHrow(); return notnull; } else { return null; }
 		case ROWS:
-			if(match) {	analyzeRows(); return true; } else { return false; }
-		default: System.out.println("ERROR"); return false;
+			if(match) {	analyzeRows(); return notnull; } else { return null; }
+		default: System.out.println("ERROR"); return null;
 		}
 	}
 	

@@ -5,11 +5,18 @@ import java.util.Hashtable;
 
 public class SemanticAnalyzer {
 
-	Hashtable<String, String> symbolTable;
+	LexicalAnalyzer lex;
+	private Symbol currentAttr;
+	
+	public SemanticAnalyzer(LexicalAnalyzer lex) {
+		this.lex = lex;
+	}
 	
 	public boolean validate(Symbol attr, Symbol[] val) {
 		int quantvals[] = {1, 2, 4};
 		int tdecorvals[] = {1, 2, 3, 4, 5};
+		
+		currentAttr = attr;
 		
 		switch(attr.val()) {
 		case Lexer._import:
@@ -39,76 +46,78 @@ public class SemanticAnalyzer {
 					return validate(1, Arrays.copyOfRange(val, 1, 2), Lexer.__text);				
 			}else return false;
 		case Lexer._accordion:
-			return validate(1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
+			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
 					Lexer._borderradius, Lexer._class, Lexer._effect, Lexer._elevation, Lexer._height,
 					Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, Lexer._width);
 		case Lexer._dropdown:
-			return validate(1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
+			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
 					Lexer._borderradius, Lexer._class, Lexer._dropdowntype, Lexer._effect, Lexer._elevation,
 					Lexer._height, Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, 
 					Lexer._width);
 		case Lexer._hbox:
-			return validate(1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
+			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
 					Lexer._borderradius, Lexer._class, Lexer._effect, Lexer._elevation, Lexer._height,
 					Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, Lexer._spacing,
 					Lexer._width);
 		case Lexer._modal:
-			return validate(1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
+			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
 					Lexer._borderradius, Lexer._class, Lexer._effect, Lexer._elevation, Lexer._height,
 					Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, Lexer._width);
 		case Lexer._sidebar:
-			return validate(1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
+			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
 					Lexer._borderradius, Lexer._collapsible, Lexer._class, Lexer._effect, Lexer._elevation, 
 					Lexer._height, Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, 
 					Lexer._sidebartype, Lexer._width);
 		case Lexer._tabbedbox:
-			return validate(1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
+			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
 					Lexer._borderradius, Lexer._class, Lexer._effect, Lexer._elevation, Lexer._height,
 					Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, Lexer._tabcolor,
 					Lexer._width);
 		case Lexer._table:
-			return validate(1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
+			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
 					Lexer._borderradius, Lexer._class, Lexer._effect, Lexer._elevation, Lexer._height,
 					Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, Lexer._width);
 		case Lexer._vbox:
-			return validate(1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
+			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
 					Lexer._borderradius, Lexer._class, Lexer._effect, Lexer._elevation, Lexer._height,
 					Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, Lexer._spacing,
 					Lexer._width);
 		case Lexer._audio:
-			return validate(1, val, Lexer._autoplay, Lexer._controls, Lexer._height, Lexer._loop,  Lexer._muted,
+			return validate(-1, val, Lexer._autoplay, Lexer._controls, Lexer._height, Lexer._loop,  Lexer._muted,
 							Lexer._preload, Lexer._src, Lexer._tooltip, Lexer._width);
 		case Lexer._button:
-			return validate(1, val, Lexer._animation,  Lexer._bgcolor,  Lexer._border,  Lexer._bordercolor, 
-							Lexer._borderradius,  Lexer._class,  Lexer._effect,  Lexer._elevation, Lexer._height,  
-							Lexer._id,  Lexer._link,  Lexer._margin,  Lexer._onclick, Lexer._padding,  Lexer._textalign, 
-							Lexer._textcolor, Lexer._textdecoration,  Lexer._tooltip,  Lexer._width);
+			return validate(-1, val, Lexer._animation,  Lexer._bgcolor,  Lexer._border,  Lexer._bordercolor, 
+							Lexer._borderradius,  Lexer._class,  Lexer._effect,  Lexer._elevation, Lexer._fontfamily,
+							Lexer._fontsize, Lexer._height,	Lexer._id,  Lexer._link,  Lexer._margin,  Lexer._onclick,
+							Lexer._padding,  Lexer._textalign, Lexer._textcolor, Lexer._textdecoration,  Lexer._tooltip,
+							Lexer._width);
 		case Lexer._checkbox:
-			return validate(1, val, Lexer._animation,  Lexer._bgcolor,  Lexer._border,  Lexer._bordercolor, 
-					Lexer._borderradius,  Lexer._class,  Lexer._effect,  Lexer._elevation, Lexer._height,  
-					Lexer._id,  Lexer._link,  Lexer._margin,  Lexer._onclick, Lexer._padding,  Lexer._textalign, 
-					Lexer._textcolor, Lexer._textdecoration,  Lexer._tooltip,  Lexer._width);
+			return validate(-1, val, Lexer._animation,  Lexer._bgcolor,  Lexer._border,  Lexer._bordercolor, 
+					Lexer._borderradius,  Lexer._class,  Lexer._effect,  Lexer._elevation, Lexer._fontfamily, 
+					Lexer._fontsize, Lexer._height, Lexer._id,  Lexer._link,  Lexer._margin,  Lexer._onclick, 
+					Lexer._padding,  Lexer._textalign, Lexer._textcolor, Lexer._textdecoration,  Lexer._tooltip, 
+					Lexer._width);
 		case Lexer._image:
-			return validate(1, val, Lexer._alt,  Lexer._animation, Lexer._bgcolor,  Lexer._border, Lexer._bordercolor,  
+			return validate(-1, val, Lexer._alt,  Lexer._animation, Lexer._bgcolor,  Lexer._border, Lexer._bordercolor,  
 					Lexer._borderradius,  Lexer._class,  Lexer._effect,  Lexer._elevation,  Lexer._height,  Lexer._id, 
 					Lexer._link,  Lexer._margin, Lexer._onclick,  Lexer._padding,  Lexer._src,  Lexer._tooltip,  Lexer._width);
 		case Lexer._label:
-			return validate(1, val, Lexer._animation,  Lexer._bgcolor,  Lexer._border,  Lexer._bordercolor, Lexer._borderradius, 
-					Lexer._class,  Lexer._effect,  Lexer._elevation, Lexer._height,  Lexer._id,  Lexer._link,  Lexer._margin, 
-					Lexer._onclick, Lexer._padding,  Lexer._textalign,  Lexer._textcolor, Lexer._textdecoration,  Lexer._tooltip,  
-					Lexer._width);
+			return validate(-1, val, Lexer._animation,  Lexer._bgcolor,  Lexer._border,  Lexer._bordercolor, Lexer._borderradius, 
+					Lexer._class,  Lexer._effect,  Lexer._elevation, Lexer._fontfamily, Lexer._fontsize, Lexer._height,  Lexer._id, 
+					Lexer._link,  Lexer._margin, Lexer._onclick, Lexer._padding,  Lexer._textalign,  Lexer._textcolor, 
+					Lexer._textdecoration,  Lexer._tooltip,	Lexer._width);
 		case Lexer._radiobutton:
-			return validate(1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor, Lexer._borderradius, 
-					Lexer._class, Lexer._effect, Lexer._elevation, Lexer._height, Lexer._id, Lexer._link, Lexer._margin, 
-					Lexer._onclick, Lexer._padding, Lexer._radiogroup, Lexer._textalign, Lexer._textcolor, Lexer._textdecoration, 
-					Lexer._tooltip, Lexer._width);
-		case Lexer._textfield:
-			return validate(1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor, Lexer._borderradius, 
-					Lexer._class, Lexer._effect, Lexer._elevation, Lexer._height, Lexer._id, Lexer._link, Lexer._margin, 
-					Lexer._onchange, Lexer._onclick, Lexer._padding, Lexer._placeholder, Lexer._textalign, Lexer._textcolor, 
+			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor, Lexer._borderradius, 
+					Lexer._class, Lexer._effect, Lexer._elevation, Lexer._fontfamily, Lexer._fontsize, Lexer._height, Lexer._id, 
+					Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, Lexer._radiogroup, Lexer._textalign, Lexer._textcolor, 
 					Lexer._textdecoration, Lexer._tooltip, Lexer._width);
+		case Lexer._textfield:
+			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor, Lexer._borderradius, 
+					Lexer._class, Lexer._effect, Lexer._elevation, Lexer._fontfamily, Lexer._fontsize, Lexer._height, Lexer._id, 
+					Lexer._link, Lexer._margin, Lexer._onchange, Lexer._onclick, Lexer._padding, Lexer._placeholder, Lexer._textalign, 
+					Lexer._textcolor, Lexer._textdecoration, Lexer._tooltip, Lexer._width);
 		case Lexer._video:
-			return validate(1, val, Lexer._animation, Lexer._autoplay, Lexer._bgcolor, Lexer._border, Lexer._bordercolor, 
+			return validate(-1, val, Lexer._animation, Lexer._autoplay, Lexer._bgcolor, Lexer._border, Lexer._bordercolor, 
 					Lexer._borderradius,  Lexer._class, Lexer._controls, Lexer._effect, Lexer._elevation, Lexer._height, 
 					Lexer._id, Lexer._link, Lexer._loop, Lexer._margin, Lexer._muted, Lexer._onclick, Lexer._padding, 
 					Lexer._poster, Lexer._preload, Lexer._src, Lexer._tooltip, Lexer._width);
@@ -213,21 +222,30 @@ public class SemanticAnalyzer {
 		for(int i : nvals) {
 			if(vals.length == i) wrongNVals = false;
 		}
+		// nvals=-1 significa que puede haber un número indefinido de parámetros
+		wrongNVals = (nvals[0] == -1) ? false : wrongNVals;
 		if(wrongNVals) {
 			wrongNumberOfValues();
 			return false;
 		}
-		// nvals=-1 significa que puede haber un número indefinido de parámetros
-		wrongNVals = (nvals[0] == -1) ? false : wrongNVals;
 		
 		for(Symbol sy : vals) {
 			boolean wrongSym = true;
 			for(String str : lexparams) {
-				if(sy.sym().compareTo(str) == 0) {
-					wrongSym = false; break;
+				if(sy.sym()==Lexer.__meta || sy.sym()==Lexer.__container || sy.sym()==Lexer.__val ||
+						sy.sym()==Lexer.__component || sy.sym()==Lexer.__attr ) {
+					if(sy.val().compareTo(str) == 0) {
+						wrongSym = false;
+					}
+				}else {
+					if(sy.sym().compareTo(str) == 0) {
+						wrongSym = false;
+					}
 				}
+				
 			}
 			if(wrongSym) {
+				System.out.println("Error on "+sy.val()+" - "+sy.sym());
 				printSemanticError();
 				return false;
 			}
@@ -236,18 +254,21 @@ public class SemanticAnalyzer {
 		return true;
 	}
 	
-	/** Agrega una variable a la tabla de símbolos */
-	public void addSymbol(String key, String type) {
-		symbolTable.put(key, type);
-	}
-	
 	/** Imprime un mensaje de error: Número de parametros inválido */
 	private void wrongNumberOfValues(){
-		System.err.println("Semantic Analyzer: Too much values.");
+		System.err.println("Semantic error on line "+lex.getLineNumber()+". Too many values.");
 	}
 	
 	/** Imprime un mensaje de error: Error semántico */
 	private void printSemanticError() {
-		System.err.println("Semantic Analyzer: Error ");
+		System.err.println("Semantic error on line "+lex.getLineNumber()+". "+currentAttr.val());
+	}
+	
+	private void print(Symbol s, Symbol vals[]) {
+		System.out.print("Attr: "+s.val()+"; Vals:");
+		for(Symbol sym : vals) {
+			System.out.print(" "+sym.val());
+		}
+		System.out.println();
 	}
 }

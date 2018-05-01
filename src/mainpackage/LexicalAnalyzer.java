@@ -128,7 +128,7 @@ public class LexicalAnalyzer {
 				 * errores en una sola compilación*/
 				
 				// Imprimimos error
-				System.err.println("Lexical Analyzer: Error found on line "+inputFile.getLineNumber()+".: ..."+line);
+				System.err.println("Lexical error on line "+inputFile.getLineNumber()+". Unexpected input: "+line);
 				
 				// Saltamos la línea actual
 				line = "";

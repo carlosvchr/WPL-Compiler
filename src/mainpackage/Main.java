@@ -27,7 +27,7 @@ public class Main {
 		la.start(path);
 		
 		Symbol s;
-		while((s = la.next()) != null) {	
+		while((s = la.next()).sym() != Lexer.__end) {	
 				System.out.println(s.sym()+putSpaces(20-s.sym().length())+(s.val()!=null ? s.val():""));
 		}
 	}

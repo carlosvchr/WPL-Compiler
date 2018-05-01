@@ -32,4 +32,9 @@ public class Symbol {
 		this.value = v;
 	}
 	
+	/** Modifica el identificador del símbolo */
+	public void setSym(String v) {
+		this.symbol = v;
+	}
+	
 }
