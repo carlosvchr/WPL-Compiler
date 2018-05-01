@@ -95,8 +95,8 @@ public class SemanticAnalyzer {
 			return validate(-1, val, Lexer._animation,  Lexer._bgcolor,  Lexer._border,  Lexer._bordercolor, 
 					Lexer._borderradius,  Lexer._class,  Lexer._effect,  Lexer._elevation, Lexer._fontfamily, 
 					Lexer._fontsize, Lexer._height, Lexer._id,  Lexer._link,  Lexer._margin,  Lexer._onclick, 
-					Lexer._padding,  Lexer._textalign, Lexer._textcolor, Lexer._textdecoration,  Lexer._tooltip, 
-					Lexer._width);
+					Lexer._padding,  Lexer._selected, Lexer._textalign, Lexer._textcolor, Lexer._textdecoration, 
+					Lexer._tooltip, Lexer._width);
 		case Lexer._image:
 			return validate(-1, val, Lexer._alt,  Lexer._animation, Lexer._bgcolor,  Lexer._border, Lexer._bordercolor,  
 					Lexer._borderradius,  Lexer._class,  Lexer._effect,  Lexer._elevation,  Lexer._height,  Lexer._id, 
@@ -109,8 +109,8 @@ public class SemanticAnalyzer {
 		case Lexer._radiobutton:
 			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor, Lexer._borderradius, 
 					Lexer._class, Lexer._effect, Lexer._elevation, Lexer._fontfamily, Lexer._fontsize, Lexer._height, Lexer._id, 
-					Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, Lexer._radiogroup, Lexer._textalign, Lexer._textcolor, 
-					Lexer._textdecoration, Lexer._tooltip, Lexer._width);
+					Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, Lexer._radiogroup, Lexer._selected, Lexer._textalign,
+					Lexer._textcolor, Lexer._textdecoration, Lexer._tooltip, Lexer._width);
 		case Lexer._textfield:
 			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor, Lexer._borderradius, 
 					Lexer._class, Lexer._effect, Lexer._elevation, Lexer._fontfamily, Lexer._fontsize, Lexer._height, Lexer._id, 
@@ -218,6 +218,7 @@ public class SemanticAnalyzer {
 	
 	/** Check if the values or attributes are valid for their containers */
 	private boolean validate(int nvals[], Symbol vals[], String... lexparams) {
+		if(vals==null) return false;
 		boolean wrongNVals = true;
 		for(int i : nvals) {
 			if(vals.length == i) wrongNVals = false;
@@ -233,7 +234,7 @@ public class SemanticAnalyzer {
 			boolean wrongSym = true;
 			for(String str : lexparams) {
 				if(sy.sym()==Lexer.__meta || sy.sym()==Lexer.__container || sy.sym()==Lexer.__val ||
-						sy.sym()==Lexer.__component || sy.sym()==Lexer.__attr ) {
+						sy.sym()==Lexer.__bool || sy.sym()==Lexer.__component || sy.sym()==Lexer.__attr ) {
 					if(sy.val().compareTo(str) == 0) {
 						wrongSym = false;
 					}

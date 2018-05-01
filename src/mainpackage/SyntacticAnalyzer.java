@@ -15,8 +15,8 @@ public class SyntacticAnalyzer {
 	 *
 	 * <CONTAINER>			-> container dp op <ATTRS> <TAGS> cp
 	 * <TABLE>				-> table dp op <ATTRS> <HROW> <ROWS> cp
-	 * <HROW>				-> hrow dp op <TAGS> cp | $
-	 * <ROWS>				-> row dp op <TAGS> cp <ROWS> | $
+	 * <HROW>				-> hrow dp op <ATTRS> <TAGS> cp | $
+	 * <ROWS>				-> row dp op <ATTRS> <TAGS> cp <ROWS> | $
 	 * <COMPONENT>			-> component dp text? (op <ATTRS> cp)?
 	 * <INCLUDE>			-> include dp <VALS> pc
 	 *
@@ -48,7 +48,7 @@ public class SyntacticAnalyzer {
 	SemanticAnalyzer sem = null;
 //	
 //	// CodeGenerator es la clase que genera el código
-	CodeGenerator generator = null;
+	CodeGenerator gen = null;
 //	
 //	// Pila donde registramos las etiquetas abiertas para cerrarlas cuando llegue un cp
 //	ArrayDeque<Symbol> openedTagsStac;
@@ -57,7 +57,7 @@ public class SyntacticAnalyzer {
 	/** @param Fichero fuente 
 	 *  @param Fichero donde se genera el código */
 	public SyntacticAnalyzer(String path, String output) {
-		generator = new CodeGenerator(output);	
+		gen = new CodeGenerator(output);	
 		lex = new LexicalAnalyzer();
 		sem = new SemanticAnalyzer(lex);
 		lex.start(path);
@@ -127,14 +127,14 @@ public class SyntacticAnalyzer {
 	private boolean analyzeProgram() {
 		
 		// Genera las etiquetas de apertura html
-		generator.startHead();
+		gen.startHead();
 			
 		analyze(NT.IMPORTS);
 		analyze(NT.META);
 		analyze(NT.DEFINES);
 		
 		// Genera la etiqueta de cierre del head y apertura del body
-		generator.startBody();
+		gen.startBody();
 		
 		analyze(NT.TAG);
 		
@@ -144,7 +144,7 @@ public class SyntacticAnalyzer {
 		}
 		
 		// Genera las etiquetas de cierre html
-		generator.end();
+		gen.end();
 		
 		return true;
 	}
@@ -157,6 +157,7 @@ public class SyntacticAnalyzer {
 		Symbol vals[] = analyze(NT.VALS);
 		sem.validate(s, vals);
 		analyze(Lexer.__pc, false);
+		gen.genImport(vals[0].val());
 		analyze(NT.IMPORTS);
 	}
 	
@@ -168,6 +169,10 @@ public class SyntacticAnalyzer {
 		Symbol vals[] = analyze(NT.VALS);
 		sem.validate(s,  vals);
 		analyze(Lexer.__pc, false);
+		String mdlist[] = new String[vals.length+1];
+		mdlist[0] = s.val();
+		for(int i=0; i<vals.length; i++) mdlist[i+1] = vals[i].val();
+		gen.genMetadata(mdlist);
 		analyze(NT.META);
 	}
 		
@@ -196,53 +201,73 @@ public class SyntacticAnalyzer {
 	/** <CONTAINER> -> container dp op <ATTRS> <TAGS> cp */
 	private void analyzeContainer() {
 		Symbol s = lex.nextAndUndo();
+		gen.openTag(s.val());
 		analyze(Lexer.__container, false);
 		analyze(Lexer.__dp, false);
 		analyze(Lexer.__op, false);
 		Symbol vals[] = analyze(NT.ATTRS);
 		sem.validate(s, vals);
+		gen.finishOpenTag();
 		analyze(NT.TAG);
 		analyze(Lexer.__cp, false);
+		gen.closeTag();
 	}
 	
 	/** <TABLE> -> table dp op <ATTRS> <HROW> <ROWS> cp */
 	private void analyzeTable() {
 		Symbol s = lex.nextAndUndo();
+		gen.openTag(s.val());
 		analyze(Lexer._table, false);
 		analyze(Lexer.__dp, false);
 		analyze(Lexer.__op, false);
 		Symbol vals[] = analyze(NT.ATTRS);
 		sem.validate(s, vals);
+		gen.finishOpenTag();
 		analyze(NT.HROW);
 		analyze(NT.ROWS);
 		analyze(Lexer.__cp, false);
+		gen.closeTag();
 	}
 	
-	/** <HROW> -> hrow dp op <TAGS> cp | $ */
+	/** <HROW> -> hrow dp op <ATTRS> <TAGS> cp | $ */
 	private void analyzeHrow() {
+		Symbol s = lex.nextAndUndo();
+		gen.openTag(s.val());
 		analyze(Lexer._hrow, false);
 		analyze(Lexer.__dp, false);
 		analyze(Lexer.__op, false);
+		Symbol vals[] = analyze(NT.ATTRS);
+		sem.validate(s, vals);
+		gen.finishOpenTag();
 		analyze(NT.TAG);
 		analyze(Lexer.__cp, false);
+		gen.closeTag();
 	}
 	
-	/** <ROWS> -> row dp op <TAGS> cp <ROWS> | $ */
+	/** <ROWS> -> row dp op <ATTRS> <TAGS> cp <ROWS> | $ */
 	private void analyzeRows() {
+		Symbol s = lex.nextAndUndo();
+		gen.openTag(s.val());
 		analyze(Lexer._row, false);
 		analyze(Lexer.__dp, false);
 		analyze(Lexer.__op, false);
+		Symbol vals[] = analyze(NT.ATTRS);
+		sem.validate(s, vals);
+		gen.finishOpenTag();
 		analyze(NT.TAG);
 		analyze(Lexer.__cp, false);
+		gen.closeTag();
 		analyze(NT.ROWS);
 	}
 	
 	/** <COMPONENT> -> component dp text? (op <ATTRS> cp)? */
 	private void analyzeComponent() {
 		Symbol s = lex.nextAndUndo();
+		gen.openTag(s.val());
 		analyze(Lexer.__component, false);
 		analyze(Lexer.__dp, false);
-		analyze(Lexer.__text, true);
+		Symbol stext = (lex.nextAndUndo().sym().compareTo(Lexer.__text)==0) ? lex.next() : null;
+		if(stext!=null) { gen.genAttrs(Lexer.__text, stext.val());}
 		if(analyze(Lexer.__op, true)!=null) {
 			Symbol vals[] = analyze(NT.ATTRS);
 			sem.validate(s, vals);
@@ -251,6 +276,8 @@ public class SyntacticAnalyzer {
 			lex.undo();
 			analyze(Lexer.__pc, false);
 		}
+		gen.finishOpenTag();
+		gen.closeTag();
 	}
 	
 	/** <INCLUDE> -> include dp <VALS> pc */
@@ -271,6 +298,7 @@ public class SyntacticAnalyzer {
 		Symbol v[] = analyze(NT.VALS);
 		sem.validate(at, v);
 		analyze(Lexer.__pc, false);
+		gen.genAttrs(at.val(), v);
 		Symbol recAttrs[] = analyze(NT.ATTRS);
 		Symbol attrs[] = new Symbol[(recAttrs==null ? 1 : recAttrs.length+1)];
 		for(int i=1; i<attrs.length; i++) attrs[i] = recAttrs[i-1];

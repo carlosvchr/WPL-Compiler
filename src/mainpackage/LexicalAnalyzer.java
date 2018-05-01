@@ -89,7 +89,7 @@ public class LexicalAnalyzer {
 		if(closeStack > 0) {
 			closeStack--;
 			openedP--;
-			history = new Symbol(CP, "}");
+			history = new Symbol(CP, "cp");
 			return history;
 		}
 		
@@ -166,14 +166,14 @@ public class LexicalAnalyzer {
 						emmitedFinalPC = true;
 						// Comprobamos que no se haya emitido ya un PC
 						if(history.sym().compareTo(PC) != 0) {
-							history = new Symbol(PC, ";");
+							history = new Symbol(PC, "pc");
 							return history;
 						}
 					}
 					// Y ahora vamos devolviendo los CP que esten abiertos
 					if(openedP > 0) {
 						openedP--;
-						history = new Symbol(CP, "}");
+						history = new Symbol(CP, "cp");
 						return history;
 					}else {
 						history = new Symbol(Lexer.__end, Lexer.__end);
@@ -229,20 +229,20 @@ public class LexicalAnalyzer {
 			// Si es mayor, emitimos op, si es menor cp, en caso contrario pc, para separar sentencias
 			if(ntabs > tabCont) {
 				tabCont = ntabs;
-				history = new Symbol(OP, "{");
+				history = new Symbol(OP, "op");
 				openedP++;
 				return history;
 			}else if(ntabs < tabCont) {
 				// Hacemos una pila para que si hay que devolver mas cierres, se haga en las siguientes llamadas
 				closeStack = tabCont - ntabs;
 				tabCont = ntabs;
-				history = new Symbol(PC, ";");	// Devolvemos PC que debe ir antes de CP
+				history = new Symbol(PC, "pc");	// Devolvemos PC que debe ir antes de CP
 				return history;
 			}else {  // Si es una linea normal
 				// Comprobamos que no se haya emitido ya un PC, que se emita al comienzo o despues de OP, CP o DP
 				if(history != null && history.sym().compareTo(PC) != 0 && history.sym().compareTo(OP) != 0
 						&& history.sym().compareTo(CP) != 0 && history.sym().compareTo(DP) != 0) {
-					history = new Symbol(PC, ";");
+					history = new Symbol(PC, "pc");
 					return history;
 				}else {
 					return next();

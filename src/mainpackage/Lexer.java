@@ -45,7 +45,6 @@ public class Lexer {
 	public static final String _image = "image";
 	public static final String _label = "label";
 	public static final String _radiobutton = "radiobutton";
-	public static final String _separator = "separator";
 	public static final String _textfield = "textfield";
 	public static final String _video = "video";
 	
@@ -153,7 +152,7 @@ public class Lexer {
 			{_row,				"^("+_row+")"},
 			{_hrow,				"^("+_hrow+")"},
 			{__component,		"^(("+_audio+")|("+_button+")|("+_checkbox+")|("+_image+")|("+_label+")|"+
-								"("+_radiobutton+")|("+_separator+")|("+_textfield+")|("+_video+"))"},			
+								"("+_radiobutton+")|("+_textfield+")|("+_video+"))"},			
 			{__attr,			"^(("+_align+")|("+_alt+")|("+_animation+")|("+_author+")|("+_autoplay+")|("+_collapsible+")|"+
 								"("+_bgcolor+")|("+_bordercolor+")|("+_borderradius+")|("+_border+")|("+_charset+")|"+
 								"("+_class+")|("+_controls+")|("+_description+")|("+_dropdowntype+")|("+_effect+")|"+
