@@ -9,6 +9,7 @@ public class CodeGenerator {
 	IOManager output;
 	String path;
 	int dropdownCounter;
+	int accordionCounter;
 	
 	Deque<String[]> containerStack;
 	
@@ -93,14 +94,16 @@ public class CodeGenerator {
 		String s[] = new String[2];
 		switch(tag) {
 		case Lexer._accordion:
-			currentLine = "<div>";
+			accordionCounter++;
+			currentLine = "<button style=\"\" onclick=\"toggleDropdown('accordion"+accordionCounter+"')\" class=\"w3-button w3-block\"></button>"+
+							"<div id=\"accordion"+accordionCounter+"\" class=\"w3-hide\">";
 			s[0] = Lexer._accordion;
 			s[1] = "</div>";
 			containerStack.push(s);
 			break;
 		case Lexer._dropdown:
 			dropdownCounter++;
-			currentLine = "<div class=\"w3-dropdown-hover\"><button style=\"\" class=\"w3-button\"></button>"+
+			currentLine = "<div class=\"w3-dropdown-hover\" style=\"\"><button style=\"width:100%; height:100%;\" class=\"w3-button\"></button>"+
 							"<div id=\"dropdown"+dropdownCounter+"\""+
 							" class=\"w3-dropdown-content w3-bar-block w3-border\">";
 			s[0] = Lexer._dropdown;
@@ -211,7 +214,7 @@ public class CodeGenerator {
 				addClass("w3-mobile");
 				addStyle("display:inline-block");
 			}else if(parent[0].compareTo(Lexer._vbox)==0) {
-				containerStack.peekFirst()[1] += "<br>";
+				containerStack.peekFirst()[1] += "<div style=\"width:100%;\"></div>";
 			}else if(parent[0].compareTo(Lexer._dropdown)==0) {
 				addClass("w3-bar-item");
 			}
@@ -375,7 +378,8 @@ public class CodeGenerator {
 		case Lexer._spacing:
 			break;
 		case Lexer.__text:
-			if(containerStack.peekFirst()[0].compareTo(Lexer._dropdown)==0) {
+			String aux = containerStack.peekFirst()[0];
+			if(aux.compareTo(Lexer._dropdown)==0 || aux.compareTo(Lexer._accordion)==0) {
 				String lineaux[] = currentLine.split("</button>");
 				currentLine = lineaux[0] + values[0] + "</button>" + lineaux[1];
 			}else {
@@ -406,7 +410,7 @@ public class CodeGenerator {
 		case Lexer._tooltip:
 			addAttr("title=\""+values[0]+"\"");
 			break;
-		case Lexer._width:
+		case Lexer._width:	
 			addStyle("width:"+values[0]);
 			break;
 			default: break;
@@ -486,7 +490,6 @@ public class CodeGenerator {
 				currentLine = sp[0] + "class=\"" + attr + " " + sp[1];
 			}
 		}
-		
 	}
 	
 	/** Introduce un atributo dentro del atributo style */
@@ -495,9 +498,13 @@ public class CodeGenerator {
 		if(!currentLine.contains("style=\"")) {
 			currentLine = currentLine.substring(0, currentLine.length()-1) + " style=\"" + attr + ";\">";
 		}else {	
+			String aux = containerStack.peekFirst()[0];
 			String[] sp = currentLine.split("style=\"");
 			if(sp.length == 2) {
 				currentLine = sp[0] + "style=\"" + attr + "; " + sp[1];
+			}
+			if(aux.compareTo(Lexer._dropdown)==0) {
+				currentLine = sp[0] + "style=\"" + attr + "; " + sp[1] + "style=\"" + sp[2];
 			}
 		}
 	}
