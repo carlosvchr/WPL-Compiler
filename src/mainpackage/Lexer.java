@@ -32,7 +32,6 @@ public class Lexer {
 	public static final String _hbox = "hbox";
 	public static final String _modal = "modal";
 	public static final String _sidebar = "sidebar";
-	public static final String _tabbedbox = "tabbedbox";
 	public static final String _table = "table";
 	public static final String _hrow = "hrow";
 	public static final String _row = "row";
@@ -89,8 +88,6 @@ public class Lexer {
 	public static final String _sidebartype = "sidebar-type";
 	public static final String _src = "src";
 	public static final String _spacing = "spacing";
-	public static final String _tabcolor = "tab-color";
-	public static final String _tabs = "tabs";
 	public static final String _textalign = "textalign";
 	public static final String _textcolor = "text-color";
 	public static final String _textdecoration = "text-decoration";
@@ -147,7 +144,7 @@ public class Lexer {
 			{_define,			"^("+_define+")"},			
 			{_include,			"^("+_include+")"},	
 			{__container,		"^(("+_accordion+")|("+_dropdown+")|("+_hbox+")|("+_modal+")|("+_sidebar+")|"+
-								"("+_tabbedbox+")|("+_vbox+"))"},
+								"("+_vbox+"))"},
 			{_table,			"^("+_table+")"},
 			{_row,				"^("+_row+")"},
 			{_hrow,				"^("+_hrow+")"},
@@ -160,8 +157,8 @@ public class Lexer {
 								"("+_keywords+")|("+_lang+")|("+_link+")|("+_loop+")|("+_margin+")|"+
 								"("+_muted+")|("+_onchange+")|("+_onclick+")|("+_padding+")|("+_pageicon+")|"+
 								"("+_placeholder+")|("+_poster+")|("+_preload+")|("+_radiogroup+")|("+_redirect+")|"+
-								"("+_selected+")|("+_sidebartype+")|("+_src+")|("+_spacing+")|("+_tabcolor+")|"+
-								"("+_tabs+")|("+_textalign+")|("+_textcolor+")|("+_textdecoration+")|"+
+								"("+_selected+")|("+_sidebartype+")|("+_src+")|("+_spacing+")|"+
+								"("+_textalign+")|("+_textcolor+")|("+_textdecoration+")|"+
 								"("+_title+")|("+_tooltip+")|("+_width+"))"},			
 			{__val,				"^(("+_bold+")|("+_bottomright+")|("+_bottomleft+")|("+_bottom+")|("+_clickable+")|"+
 								"("+_center+")|("+_fadein+")|("+_fading+")|("+_floating+")|("+_grayscalemin+")|"+

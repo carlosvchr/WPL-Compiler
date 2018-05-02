@@ -118,10 +118,10 @@ public class SyntacticAnalyzer {
 		
 	/** Comprueba si un terminal forma parte de los siguientes de un no terminal 
 	 * TODO: Esta funcion esta sin hacer, los datos corresponden a los de la funcion first()*/
-	private boolean following(NT nt, String t) {
-		
-		return false;
-	}
+//	private boolean following(NT nt, String t) {
+//		
+//		return false;
+//	}
 	
 	/** <PROGRAM> -> <IMPORTS> <META> <DEFINES> <TAG> */
 	private boolean analyzeProgram() {

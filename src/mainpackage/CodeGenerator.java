@@ -8,10 +8,7 @@ public class CodeGenerator {
 
 	IOManager output;
 	String path;
-	int radiogroups;
-	int tabbedboxs;
-	int itemcont;
-	String tabbedBar;
+	int dropdownCounter;
 	
 	Deque<String[]> containerStack;
 	
@@ -29,10 +26,7 @@ public class CodeGenerator {
 		output = new IOManager();
 		currentLine = "";
 		currentContent = "";
-		radiogroups = 0;
-		tabbedboxs = 0;
-		itemcont = 0;
-		tabbedBar = "";
+		dropdownCounter = 0;
 	}
 	
 	public void startHead() {
@@ -105,9 +99,12 @@ public class CodeGenerator {
 			containerStack.push(s);
 			break;
 		case Lexer._dropdown:
-			currentLine = "<div class=\"w3-dropdown-click\">";
+			dropdownCounter++;
+			currentLine = "<div class=\"w3-dropdown-hover\"><button style=\"\" class=\"w3-button\"></button>"+
+							"<div id=\"dropdown"+dropdownCounter+"\""+
+							" class=\"w3-dropdown-content w3-bar-block w3-border\">";
 			s[0] = Lexer._dropdown;
-			s[1] = "</div>";
+			s[1] = "</div></div>";
 			containerStack.push(s);
 			break;
 		case Lexer._hbox:
@@ -125,13 +122,6 @@ public class CodeGenerator {
 		case Lexer._sidebar:
 			currentLine = "<div class=\"w3-sidebar w3-bar-block\">";
 			s[0] = Lexer._sidebar;
-			s[1] = "</div>";
-			containerStack.push(s);
-			break;
-		case Lexer._tabbedbox:
-			tabbedboxs ++;
-			currentLine = "<div>";
-			s[0] = Lexer._tabbedbox;
 			s[1] = "</div>";
 			containerStack.push(s);
 			break;
@@ -222,6 +212,8 @@ public class CodeGenerator {
 				addStyle("display:inline-block");
 			}else if(parent[0].compareTo(Lexer._vbox)==0) {
 				containerStack.peekFirst()[1] += "<br>";
+			}else if(parent[0].compareTo(Lexer._dropdown)==0) {
+				addClass("w3-bar-item");
 			}
 		}
 		
@@ -300,6 +292,12 @@ public class CodeGenerator {
 			if(values[0].compareTo(Lexer._true) == 0) addAttr("controls");
 			break;
 		case Lexer._dropdowntype:
+			if(values[0].compareTo(Lexer._clickable)==0) {			
+				currentLine = currentLine.replace("w3-dropdown-hover", "w3-dropdown-click");
+				String aux[] = currentLine.split("<button");
+				currentLine = aux[0] + "<button onclick=\"toggleDropdown('dropdown"+dropdownCounter+"')\""+aux[1];
+				currentLine = currentLine.substring(0, currentLine.length()-1) + " onclick=\"toggleDropdown('dropdown"+dropdownCounter+"')\">";			
+			}
 			break;
 		case Lexer._effect:
 			switch(values[0]) {
@@ -376,12 +374,13 @@ public class CodeGenerator {
 			break;	
 		case Lexer._spacing:
 			break;
-		case Lexer._tabcolor:
-			break;
-		case Lexer._tabs:
-			break;
 		case Lexer.__text:
-			currentContent = values[0];
+			if(containerStack.peekFirst()[0].compareTo(Lexer._dropdown)==0) {
+				String lineaux[] = currentLine.split("</button>");
+				currentLine = lineaux[0] + values[0] + "</button>" + lineaux[1];
+			}else {
+				currentContent = values[0];
+			}
 			break;
 		case Lexer._textalign:
 			addStyle("text-align:"+values[0]);
@@ -430,13 +429,6 @@ public class CodeGenerator {
 	
 	/** Cierra la etiqueta abierta */
 	public void closeTag() {
-		switch(containerStack.peekFirst()[0]) {
-		case Lexer._tabbedbox:
-			String sbar = tabs()+"<div>\n" + tabbedBar + tabs(1) + "</div>";
-			tabbedBar = "";
-			output.putLine(tabs()+sbar);
-			break;
-		}
 		output.putLine(tabs()+containerStack.pop()[1]);
 	}
 	
@@ -525,7 +517,7 @@ public class CodeGenerator {
 			}
 			currentContent = "<span onclick=\"closeModal('"+clean(attr.split("=")[1])+"')\" "+
 							"style=\"z-index:999;\" class=\"w3-button w3-display-topright\">&times;</span>";
-		}else {
+		}else{
 			currentLine = currentLine.substring(0, currentLine.length()-1)+" "+attr+">";
 		}
 	}
@@ -557,26 +549,21 @@ public class CodeGenerator {
 	/** Genera las funciones predefinidas para el correcto funcionamiento de algunos componentes */
 	private void genPredefinedFunctions() {
 		output.putLine(
-				tabs(2)+"function openTab(tabindicator, tid, v, vclass) {\n" + 
-				tabs(3)+"var i;\n" + 
-				tabs(3)+"var x = document.getElementsByClassName(vclass);\n" + 
-				tabs(3)+"for (i = 0; i < x.length; i++) {\n" + 
-				tabs(4)+"x[i].style.display = \"none\"; \n" + 
-				tabs(3)+"}\n"+
-				tabs(3)+"var tablinks = document.getElementsByClassName(tabindicator);\n"+
-				tabs(3)+"for (i = 0; i < x.length; i++) {\n" + 
-				tabs(4)+"tablinks[i].className = tablinks[i].className.replace(\" w3-border-red\", \"\");\n" +
-				tabs(3)+"}\n" + 
-				tabs(3)+"document.getElementById(v).style.display = \"block\";\n" + 
-				tabs(3)+"document.getElementById(tid).className += \" w3-border-red\";\n" + 
-				tabs(2)+"}\n");
-		output.putLine(
 				tabs(2)+"function openModal(identifier) {\n" + 
 				tabs(3)+"document.getElementById(identifier).style.display='block';\n" + 
 				tabs(2)+"}\n");
 		output.putLine(
 				tabs(2)+"function closeModal(identifier) {\n" + 
 				tabs(3)+"document.getElementById(identifier).style.display='none';\n" + 
+				tabs(2)+"}\n");
+		output.putLine(
+				tabs(2)+"function toggleDropdown(identifier) {\n" + 
+				tabs(3)+"var x = document.getElementById(identifier);\n" + 
+				tabs(3)+"if (x.className.indexOf(\"w3-show\") == -1) {\n" + 
+				tabs(4)+"x.className += \" w3-show\";\n" + 
+				tabs(3)+"} else { \n" + 
+				tabs(4)+"x.className = x.className.replace(\" w3-show\", \"\");\n"+
+				tabs(3)+"}\n" + 
 				tabs(2)+"}\n");
 	}
 	

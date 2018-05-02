@@ -1,7 +1,6 @@
 package mainpackage;
 
 import java.util.Arrays;
-import java.util.Hashtable;
 
 public class SemanticAnalyzer {
 
@@ -46,14 +45,17 @@ public class SemanticAnalyzer {
 					return validate(1, Arrays.copyOfRange(val, 1, 2), Lexer.__text);				
 			}else return false;
 		case Lexer._accordion:
-			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
-					Lexer._borderradius, Lexer._class, Lexer._effect, Lexer._elevation, Lexer._height,
-					Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, Lexer._width);
-		case Lexer._dropdown:
-			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
-					Lexer._borderradius, Lexer._class, Lexer._dropdowntype, Lexer._effect, Lexer._elevation,
-					Lexer._height, Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, 
+			return validate(-1, val, Lexer._animation,  Lexer._bgcolor,  Lexer._border,  Lexer._bordercolor, 
+					Lexer._borderradius,  Lexer._class,  Lexer._effect,  Lexer._elevation, Lexer._fontfamily,
+					Lexer._fontsize, Lexer._height,	Lexer._id,  Lexer._link,  Lexer._margin,  Lexer._onclick,
+					Lexer._padding,  Lexer._textalign, Lexer._textcolor, Lexer._textdecoration,  Lexer._tooltip,
 					Lexer._width);
+		case Lexer._dropdown:
+			return validate(-1, val, Lexer._animation,  Lexer._bgcolor,  Lexer._border,  Lexer._bordercolor, 
+					Lexer._borderradius,  Lexer._class,  Lexer._dropdowntype, Lexer._effect,  Lexer._elevation, 
+					Lexer._fontfamily, Lexer._fontsize, Lexer._height,	Lexer._id,  Lexer._link,  Lexer._margin,  
+					Lexer._onclick,	Lexer._padding,  Lexer._textalign, Lexer._textcolor, Lexer._textdecoration,  
+					Lexer._tooltip,	Lexer._width);
 		case Lexer._hbox:
 			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
 					Lexer._borderradius, Lexer._class, Lexer._effect, Lexer._elevation, Lexer._height,
@@ -68,11 +70,6 @@ public class SemanticAnalyzer {
 					Lexer._borderradius, Lexer._collapsible, Lexer._class, Lexer._effect, Lexer._elevation, 
 					Lexer._height, Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, 
 					Lexer._sidebartype, Lexer._width);
-		case Lexer._tabbedbox:
-			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
-					Lexer._borderradius, Lexer._class, Lexer._effect, Lexer._elevation, Lexer._height,
-					Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, Lexer._tabcolor,
-					Lexer._width);
 		case Lexer._table:
 			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
 					Lexer._borderradius, Lexer._class, Lexer._effect, Lexer._elevation, Lexer._height,
@@ -190,10 +187,6 @@ public class SemanticAnalyzer {
 			return validate(1, val, Lexer.__text);
 		case Lexer._spacing:
 			return validate(1, val, Lexer.__measure);
-		case Lexer._tabcolor:
-			return validate(1, val, Lexer.__color);
-		case Lexer._tabs:
-			return validate(-1, val, Lexer.__text);
 		case Lexer._textalign:
 			return validate(1, val, Lexer._right, Lexer._left, Lexer._center);
 		case Lexer._textcolor:
@@ -265,11 +258,11 @@ public class SemanticAnalyzer {
 		System.err.println("Semantic error on line "+lex.getLineNumber()+". "+currentAttr.val());
 	}
 	
-	private void print(Symbol s, Symbol vals[]) {
-		System.out.print("Attr: "+s.val()+"; Vals:");
-		for(Symbol sym : vals) {
-			System.out.print(" "+sym.val());
-		}
-		System.out.println();
-	}
+//	private void print(Symbol s, Symbol vals[]) {
+//		System.out.print("Attr: "+s.val()+"; Vals:");
+//		for(Symbol sym : vals) {
+//			System.out.print(" "+sym.val());
+//		}
+//		System.out.println();
+//	}
 }
