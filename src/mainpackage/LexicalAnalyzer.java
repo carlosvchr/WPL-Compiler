@@ -67,6 +67,16 @@ public class LexicalAnalyzer {
 		// Inicializamos la primera linea
 		try {
 			line = inputFile.getLine();
+			if(line != null) {
+				while(line.trim().endsWith(Lexer.__br)) {
+					String nl = inputFile.getLine();
+					if(nl != null) {
+						line = trimEnd(line);	// quitamos espacios finales de linea
+						line = line.substring(0, line.length()-1);	// Eliminamos el símbolo de br 
+						line += nl.trim();
+					}else { break; }
+				}
+			}
 		} catch (IOException e) {
 			System.err.println("Error: File is empty.");
 			e.printStackTrace();
@@ -147,6 +157,15 @@ public class LexicalAnalyzer {
 			// Los espacios los descartamos, entonces devolvemos la siguiente ocurrencia
 			if(Lexer.lexer[index][0].compareTo(Lexer.__blank) == 0) {
 				return next();
+			}
+			
+			// Soporte de iconos
+			if(Lexer.lexer[index][0].compareTo(Lexer.__text) == 0) {
+				String icons;
+				while((icons=REManager.validate(Lexer.__icon, bestMatch))!=null){
+					String icname = icons.substring(1, icons.length()-1).trim().replace(" ", "_");
+					bestMatch = bestMatch.replace(icons, "<i class=\"material-icons\">"+icname+"</i>");
+				}
 			}
 			
 			// Por último retornamos el símbolo de la categoría que hizo mejor coincidencia

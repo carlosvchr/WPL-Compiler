@@ -11,7 +11,7 @@ public class SyntacticAnalyzer {
 	 * <DEFINES>			-> define dp <VALS> pc <DEFINES> | $
 	 *
 	 * <TAGS>				-> <TAG> <TAGS> | $
-	 * <TAG>				-> <CONTAINER> | <TABLE> | <COMPONENT> | <INCLUDE>
+	 * <TAG>				-> <CONTAINER> | <TABLE> | <COMPONENT> | <INCLUDE> | <HTML>
 	 *
 	 * <CONTAINER>			-> container dp op <ATTRS> <TAGS> cp
 	 * <TABLE>				-> table dp op <ATTRS> <HROW> <ROWS> cp
@@ -19,6 +19,9 @@ public class SyntacticAnalyzer {
 	 * <ROWS>				-> row dp op <ATTRS> <TAGS> cp <ROWS> | $
 	 * <COMPONENT>			-> component dp text? (op <ATTRS> cp)?
 	 * <INCLUDE>			-> include dp <VALS> pc
+	 * <HTML>				-> html dp op <OPEN> <TAGS> <CLOSE> cp
+	 * <OPEN>				-> open dp text pc
+	 * <CLOSE>				-> close dp text pc
 	 *
 	 * <ATTRS>				-> attr dp <VALS> pc <ATTRS> | $
 	 *
@@ -39,7 +42,7 @@ public class SyntacticAnalyzer {
 	
 	/** No terminales */
 	private enum NT { META, IMPORTS, DEFINES, TAG, CONTAINER, TABLE, HROW,
-					ROWS, COMPONENT, INCLUDE, ATTRS, VALS }
+					ROWS, COMPONENT, INCLUDE, ATTRS, VALS, HTML, OPEN, CLOSE }
 
 	// Analizador léxico al que iremos requiriendo símbolos
 	LexicalAnalyzer lex = null;
@@ -96,9 +99,16 @@ public class SyntacticAnalyzer {
 			return (t.compareTo(Lexer._hrow) == 0);
 		case ROWS:
 			return (t.compareTo(Lexer._row) == 0);
+		case HTML:
+			return (t.compareTo(Lexer._html) == 0);
+		case OPEN:
+			return (t.compareTo(Lexer._open) == 0);
+		case CLOSE:
+			return (t.compareTo(Lexer._close) == 0);
 		case TAG:
 			return (t.compareTo(Lexer.__container) == 0 || t.compareTo(Lexer.__component) == 0 || 
-					t.compareTo(Lexer._include) == 0) || t.compareTo(Lexer._table) == 0;
+					t.compareTo(Lexer._include) == 0) || t.compareTo(Lexer._table) == 0 ||
+					t.compareTo(Lexer._html) == 0;
 		case CONTAINER:
 			return (t.compareTo(Lexer.__container) == 0);
 		case COMPONENT:
@@ -194,6 +204,7 @@ public class SyntacticAnalyzer {
 		else if(analyze(NT.COMPONENT)!=null);
 		else if(analyze(NT.TABLE)!=null);
 		else if(analyze(NT.DEFINES)!=null);
+		else if(analyze(NT.HTML)!=null);
 		else printSyntacticError("TAGS");
 		analyze(NT.TAG);
 	}
@@ -292,6 +303,39 @@ public class SyntacticAnalyzer {
 		analyze(Lexer.__pc, false);
 	}
 	
+	/** <HTML> -> html dp op <OPEN> <TAGS> <CLOSE> cp */
+	private void analyzeHtml() {
+		analyze(Lexer._html, false);
+		analyze(Lexer.__dp, false);
+		analyze(Lexer.__op, false);
+		analyze(NT.OPEN);
+		analyze(NT.TAG);
+		analyze(NT.CLOSE);
+		analyze(Lexer.__cp, false);
+	}
+	
+	/** <OPEN> -> open dp text pc */
+	private void analyzeOpen() {
+		Symbol s = lex.nextAndUndo();
+		analyze(Lexer._open, false);
+		analyze(Lexer.__dp, false);
+		Symbol v[] = analyze(NT.VALS);
+		sem.validate(s, v);
+		analyze(Lexer.__pc, false);
+		gen.genHtml(v[0].val());
+	}
+	
+	/** <CLOSE>	-> close dp text pc */
+	private void analyzeClose() {
+		Symbol s = lex.nextAndUndo();
+		analyze(Lexer._close, false);
+		analyze(Lexer.__dp, false);
+		Symbol v[] = analyze(NT.VALS);
+		sem.validate(s, v);
+		analyze(Lexer.__pc, false);
+		gen.genHtml(v[0].val());
+	}
+	
 	/** <ATTRS> -> attr dp <VALS> pc <ATTRS> | $ */
 	private Symbol[] analyzeAttrs() {
 		Symbol at = lex.nextAndUndo();
@@ -376,7 +420,13 @@ public class SyntacticAnalyzer {
 			if(match) {	analyzeHrow(); return notnull; } else { return null; }
 		case ROWS:
 			if(match) {	analyzeRows(); return notnull; } else { return null; }
-		default: System.out.println("ERROR"); return null;
+		case HTML:
+			if(match) {	analyzeHtml(); return notnull; } else { return null; }
+		case OPEN:
+			if(match) {	analyzeOpen(); return notnull; } else { return null; }
+		case CLOSE:
+			if(match) {	analyzeClose(); return notnull; } else { return null; }
+		default: System.out.println("UNEXPECTED ERROR. Contact Support."); return null;
 		}
 	}
 	

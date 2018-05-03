@@ -10,6 +10,7 @@ public class CodeGenerator {
 	String path;
 	int dropdownCounter;
 	int accordionCounter;
+	int filterCounter;
 	
 	Deque<String[]> containerStack;
 	
@@ -28,6 +29,8 @@ public class CodeGenerator {
 		currentLine = "";
 		currentContent = "";
 		dropdownCounter = 0;
+		accordionCounter = 0;
+		filterCounter = 0;
 	}
 	
 	public void startHead() {
@@ -35,6 +38,7 @@ public class CodeGenerator {
 		output.putLine("<!Doctype html>\n<html>\n<head>");
 		output.putLine("\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
 		output.putLine("\t<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">");
+		output.putLine("<link href=\"https://fonts.googleapis.com/icon?family=Material+Icons\" rel=\"stylesheet\">");
 		output.putLine("\t<script>\n");
 		genPredefinedFunctions();
 		output.putLine("\t</script>");
@@ -96,7 +100,7 @@ public class CodeGenerator {
 		case Lexer._accordion:
 			accordionCounter++;
 			currentLine = "<button style=\"\" onclick=\"toggleDropdown('accordion"+accordionCounter+"')\" class=\"w3-button w3-block\"></button>"+
-							"<div id=\"accordion"+accordionCounter+"\" class=\"w3-hide\">";
+							"<div class=\"accordion"+accordionCounter+" w3-hide\">";
 			s[0] = Lexer._accordion;
 			s[1] = "</div>";
 			containerStack.push(s);
@@ -104,8 +108,7 @@ public class CodeGenerator {
 		case Lexer._dropdown:
 			dropdownCounter++;
 			currentLine = "<div class=\"w3-dropdown-hover\" style=\"\"><button style=\"width:100%; height:100%;\" class=\"w3-button\"></button>"+
-							"<div id=\"dropdown"+dropdownCounter+"\""+
-							" class=\"w3-dropdown-content w3-bar-block w3-border\">";
+							"<div class=\"dropdown"+dropdownCounter+" w3-dropdown-content w3-bar-block w3-border\">";
 			s[0] = Lexer._dropdown;
 			s[1] = "</div></div>";
 			containerStack.push(s);
@@ -222,6 +225,11 @@ public class CodeGenerator {
 		
 	}
 	
+	/** Escribe html */
+	public void genHtml(String s) {
+		output.putLine(tabs(1)+clean(s));
+	}
+	
 	/** Escribe los atributos de las etiquetas */
 	public void genAttrs(String attrs, String val) {
 		String values[] = {val};
@@ -319,6 +327,16 @@ public class CodeGenerator {
 			int level = Integer.parseInt(values[0]);
 			addStyle("box-shadow:0 "+2*level+"px "+5*level+"px 0 rgba(0,0,0,0.16),0 "+2*level+"px "+10*level+"px 0 rgba(0,0,0,0.12)");
 			break;
+		case Lexer._filterdropdown:
+			filterCounter++;
+			addClass("f__filter"+filterCounter);
+			addAttr("onkeyup=\"filterDropdown('"+values[0]+"', 'f__filter"+filterCounter+"')\"");
+			break;
+		case Lexer._filtertable:
+			filterCounter++;
+			addClass("f__filter"+filterCounter);
+			addAttr("onkeyup=\"filterTable("+values[0]+", '"+values[1]+"', 'f__filter"+filterCounter+"')\"");
+			break;
 		case Lexer._fontfamily:
 			addStyle("font-family:'"+values[0]+"'");
 			break;
@@ -374,7 +392,7 @@ public class CodeGenerator {
 			break;		
 		case Lexer._src:
 			addAttr("src=\""+values[0]+"\"");
-			break;	
+			break;
 		case Lexer._tableattrs:
 			for(int i=0; i<values.length; i++) {
 				switch(values[i]) {
@@ -574,13 +592,50 @@ public class CodeGenerator {
 				tabs(2)+"}\n");
 		output.putLine(
 				tabs(2)+"function toggleDropdown(identifier) {\n" + 
-				tabs(3)+"var x = document.getElementById(identifier);\n" + 
+				tabs(3)+"var x = document.getElementsByClassName(identifier)[0];\n" + 
 				tabs(3)+"if (x.className.indexOf(\"w3-show\") == -1) {\n" + 
 				tabs(4)+"x.className += \" w3-show\";\n" + 
 				tabs(3)+"} else { \n" + 
 				tabs(4)+"x.className = x.className.replace(\" w3-show\", \"\");\n"+
 				tabs(3)+"}\n" + 
 				tabs(2)+"}\n");
+		output.putLine(
+				tabs(2)+"function filterDropdown(identifier, idorigin) {\n"+
+				tabs(3)+"var input, filter, div;\n"+
+				tabs(3)+"input = document.getElementsByClassName(idorigin)[0];\n"+
+				tabs(3)+"filter = input.value.toUpperCase();\n"+
+				tabs(3)+"div = document.getElementById(identifier);\n"+
+				tabs(3)+"var buttons = Array.prototype.slice.call(div.getElementsByTagName(\"button\"), 0);\n"+
+				tabs(3)+"var labels = Array.prototype.slice.call(div.getElementsByTagName(\"label\"), 0);\n"+
+				tabs(3)+"var a = [];\n"+
+				tabs(3)+"a = a.concat(buttons);\n"+
+				tabs(3)+"a = a.concat(labels);\n"+
+				tabs(3)+"for (i = 0; i < a.length; i++) {\n"+
+				tabs(4)+"if (a[i].innerHTML.toUpperCase().indexOf(filter) > -1) {\n"+
+				tabs(5)+"a[i].style.display = \"\";\n"+
+				tabs(4)+"} else {\n"+
+				tabs(5)+"a[i].style.display = \"none\";\n"+
+				tabs(4)+"}\n"+
+			    tabs(3)+"}\n"+
+			    tabs(2)+"}\n");
+		output.putLine(
+				tabs(2)+"function filterTable(col, identifier, idorigin) {\n"+
+				tabs(3)+"var input, filter, table, tr, td, i;\n"+
+				tabs(3)+"input = document.getElementsByClassName(idorigin)[0];\n"+
+				tabs(3)+"filter = input.value.toUpperCase();\n"+
+				tabs(3)+"table = document.getElementById(identifier);\n"+
+				tabs(3)+"tr = table.getElementsByTagName(\"tr\");\n"+
+				tabs(3)+"for (i = 0; i < tr.length; i++) {\n"+
+				tabs(4)+"td = tr[i].getElementsByTagName(\"td\")[col-1];\n"+
+				tabs(4)+"if (td) {\n"+
+				tabs(5)+"if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {\n"+
+				tabs(6)+"tr[i].style.display = \"\";\n"+
+				tabs(5)+"} else {\n"+
+				tabs(6)+"tr[i].style.display = \"none\";\n"+
+				tabs(5)+"}\n"+
+				tabs(4)+"}\n"+
+			    tabs(3)+"}\n"+
+			    tabs(2)+"}\n");
 	}
 	
 }

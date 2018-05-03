@@ -50,6 +50,8 @@ public class SemanticAnalyzer {
 					Lexer._borderradius,  Lexer._class,  Lexer._effect,  Lexer._elevation, Lexer._fontfamily,
 					Lexer._fontsize, Lexer._height,	Lexer._id,  Lexer._link,  Lexer._margin, Lexer._padding, 
 					Lexer._textalign, Lexer._textcolor, Lexer._textdecoration,  Lexer._tooltip,	Lexer._width);
+		case Lexer._close:
+			return validate(1, val, Lexer.__text);
 		case Lexer._dropdown:
 			return validate(-1, val, Lexer._animation,  Lexer._bgcolor,  Lexer._border,  Lexer._bordercolor, 
 					Lexer._borderradius,  Lexer._class,  Lexer._dropdowntype, Lexer._effect,  Lexer._elevation, 
@@ -70,6 +72,8 @@ public class SemanticAnalyzer {
 			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
 					Lexer._borderradius, Lexer._class, Lexer._effect, Lexer._elevation, Lexer._height,
 					Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, Lexer._width);
+		case Lexer._open:
+				return validate(1, val ,Lexer.__text);
 		case Lexer._row:
 			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
 					Lexer._borderradius, Lexer._class, Lexer._effect, Lexer._elevation, Lexer._fontfamily, 
@@ -95,10 +99,10 @@ public class SemanticAnalyzer {
 							Lexer._preload, Lexer._src, Lexer._tooltip, Lexer._width);
 		case Lexer._button:
 			return validate(-1, val, Lexer._animation,  Lexer._bgcolor,  Lexer._border,  Lexer._bordercolor, 
-							Lexer._borderradius,  Lexer._class,  Lexer._effect,  Lexer._elevation, Lexer._fontfamily,
-							Lexer._fontsize, Lexer._height,	Lexer._id,  Lexer._link,  Lexer._margin,  Lexer._onclick,
-							Lexer._padding,  Lexer._textalign, Lexer._textcolor, Lexer._textdecoration,  Lexer._tooltip,
-							Lexer._width);
+					Lexer._borderradius,  Lexer._class,  Lexer._effect,  Lexer._elevation, Lexer._fontfamily,
+					Lexer._fontsize, Lexer._height,	Lexer._id,  Lexer._link,  Lexer._margin,  Lexer._onclick,
+					Lexer._padding,  Lexer._textalign, Lexer._textcolor, Lexer._textdecoration,  Lexer._tooltip,
+					Lexer._width);
 		case Lexer._checkbox:
 			return validate(-1, val, Lexer._animation,  Lexer._bgcolor,  Lexer._border,  Lexer._bordercolor, 
 					Lexer._borderradius,  Lexer._class,  Lexer._effect,  Lexer._elevation, Lexer._fontfamily, 
@@ -121,9 +125,10 @@ public class SemanticAnalyzer {
 					Lexer._textcolor, Lexer._textdecoration, Lexer._tooltip, Lexer._width);
 		case Lexer._textfield:
 			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor, Lexer._borderradius, 
-					Lexer._class, Lexer._effect, Lexer._elevation, Lexer._fontfamily, Lexer._fontsize, Lexer._height, Lexer._id, 
-					Lexer._link, Lexer._margin, Lexer._onchange, Lexer._onclick, Lexer._padding, Lexer._placeholder, Lexer._textalign, 
-					Lexer._textcolor, Lexer._textdecoration, Lexer._tooltip, Lexer._width);
+					Lexer._class, Lexer._effect, Lexer._elevation, Lexer._filtertable, Lexer._filterdropdown, Lexer._fontfamily, 
+					Lexer._fontsize, Lexer._height, Lexer._id, Lexer._link, Lexer._margin, Lexer._onchange, Lexer._onclick, 
+					Lexer._padding, Lexer._placeholder,	Lexer._textalign, Lexer._textcolor, Lexer._textdecoration, Lexer._tooltip,
+					Lexer._width);
 		case Lexer._video:
 			return validate(-1, val, Lexer._animation, Lexer._autoplay, Lexer._bgcolor, Lexer._border, Lexer._bordercolor, 
 					Lexer._borderradius,  Lexer._class, Lexer._controls, Lexer._effect, Lexer._elevation, Lexer._height, 
@@ -160,6 +165,13 @@ public class SemanticAnalyzer {
 					Lexer._sepiamax, Lexer._grayscale, Lexer._grayscalemin, Lexer._grayscalemax);
 		case Lexer._elevation:
 			return validate(1, val, Lexer.__integer);
+		case Lexer._filterdropdown:
+			return validate(1, val, Lexer.__text);
+		case Lexer._filtertable:
+			if(val.length == 2) {
+				if(validate(1, Arrays.copyOfRange(val, 0, 1), Lexer.__integer))
+					return validate(1, Arrays.copyOfRange(val, 1, 2), Lexer.__text);				
+			}else return false;
 		case Lexer._fontfamily:
 			return validate(1, val, Lexer.__text);
 		case Lexer._fontsize:
