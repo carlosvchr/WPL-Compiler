@@ -40,7 +40,8 @@ public class CodeGenerator {
 		output.putLine("<!Doctype html>\n<html>\n<head>");
 		output.putLine("\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
 		output.putLine("\t<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">");
-		output.putLine("<link href=\"https://fonts.googleapis.com/icon?family=Material+Icons\" rel=\"stylesheet\">");
+		output.putLine("\t<link href=\"https://fonts.googleapis.com/icon?family=Material+Icons\" rel=\"stylesheet\">");
+		output.putLine("\t<style>.material-icons{display:inline-flex;vertical-align:middle;}</style>");
 		output.putLine("\t<script>\n");
 		genPredefinedFunctions();
 		output.putLine("\t</script>");
@@ -254,19 +255,6 @@ public class CodeGenerator {
 			values[i] = clean(values[i]);
 		}
 		switch(attr) {
-		case Lexer._align:
-			switch(values[0]) {
-			case Lexer._top: addClass("w3-display-topmiddle"); break;
-			case Lexer._bottom: addClass("w3-display-bottommiddle"); break;
-			case Lexer._right: addClass("w3-display-right"); break;
-			case Lexer._left: addClass("w3-display-left"); break;
-			case Lexer._topleft: addClass("w3-display-topleft"); break;
-			case Lexer._topright: addClass("w3-display-topright"); break;
-			case Lexer._bottomleft: addClass("w3-display-bottomleft"); break;
-			case Lexer._bottomright: addClass("w3-display-bottomright"); break;
-			case Lexer._center: addClass("w3-display-middle"); break;
-			}
-			break;
 		case Lexer._alt:
 			addAttr("alt=\""+values[0]+"\"");
 			break;
@@ -344,6 +332,15 @@ public class CodeGenerator {
 		case Lexer._fontsize:
 			addStyle("font-size:"+values[0]);
 			break;
+		case Lexer._fixedposition:
+			addStyle("position:absolute");
+			switch(values[0]) {
+			case Lexer._bottomleft: addStyle("bottom:"+values[1]+"; left:"+values[2]); break;
+			case Lexer._bottomright: addStyle("bottom:"+values[1]+"; right:"+values[2]); break;
+			case Lexer._topleft: addStyle("top:"+values[1]+"; left:"+values[2]); break;
+			case Lexer._topright: addStyle("top:"+values[1]+"; right:"+values[2]); break;
+			default: break;
+			}
 		case Lexer._height:
 			addStyle("height:"+values[0]);
 			break;
