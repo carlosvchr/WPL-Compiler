@@ -3,6 +3,7 @@ package mainpackage;
 public class Lexer {
 	
 	// Custom
+	public static final String __br= " \\";
 	public static final String __end = "end";
 	public static final String __blank = "blank";
 	public static final String __comment = "comment";
@@ -87,7 +88,7 @@ public class Lexer {
 	public static final String _selected = "selected";
 	public static final String _sidebartype = "sidebar-type";
 	public static final String _src = "src";
-	public static final String _spacing = "spacing";
+	public static final String _tableattrs = "table-attrs";
 	public static final String _textalign = "textalign";
 	public static final String _textcolor = "text-color";
 	public static final String _textdecoration = "text-decoration";
@@ -97,11 +98,13 @@ public class Lexer {
 	
 	// Values
 	public static final String _bold = "bold";
+	public static final String _bordered = "bordered";
 	public static final String _bottom = "bottom";
 	public static final String _bottomleft = "bottom-left";
 	public static final String _bottomright = "bottom-right";
 	public static final String _clickable = "clickable";
 	public static final String _center = "center";
+	public static final String _centered = "centered";
 	public static final String _fadein = "fade-in";
 	public static final String _fading = "fading";
 	public static final String _false = "false";
@@ -127,6 +130,7 @@ public class Lexer {
 	public static final String _sliding = "sliding";
 	public static final String _spin = "spin";
 	public static final String _strikethrough = "strikethrough";
+	public static final String _striped = "striped";
 	public static final String _top = "top";
 	public static final String _topleft = "top-left";
 	public static final String _topright = "top-right";
@@ -136,7 +140,7 @@ public class Lexer {
 	
 	public static String[][] lexer = {
 			{__blank,			"^\\s"},
-			{__comment,			"^(##[^#]*#)"},
+			{__comment,			"^(--.*)"},
 			{__dp,				"^:"},	
 			{_import,			"^("+_import+")"},			
 			{__meta,			"^(("+_author+")|("+_keywords+")|("+_lang+")|("+_redirect+")|("+_pageicon+")|"+
@@ -157,15 +161,15 @@ public class Lexer {
 								"("+_keywords+")|("+_lang+")|("+_link+")|("+_loop+")|("+_margin+")|"+
 								"("+_muted+")|("+_onchange+")|("+_onclick+")|("+_padding+")|("+_pageicon+")|"+
 								"("+_placeholder+")|("+_poster+")|("+_preload+")|("+_radiogroup+")|("+_redirect+")|"+
-								"("+_selected+")|("+_sidebartype+")|("+_src+")|("+_spacing+")|"+
+								"("+_selected+")|("+_sidebartype+")|("+_src+")|("+_tableattrs+")|"+
 								"("+_textalign+")|("+_textcolor+")|("+_textdecoration+")|"+
 								"("+_title+")|("+_tooltip+")|("+_width+"))"},			
-			{__val,				"^(("+_bold+")|("+_bottomright+")|("+_bottomleft+")|("+_bottom+")|("+_clickable+")|"+
-								"("+_center+")|("+_fadein+")|("+_fading+")|("+_floating+")|("+_grayscalemin+")|"+
+			{__val,				"^(("+_bold+")|("+_bordered+")|("+_bottomright+")|("+_bottomleft+")|("+_bottom+")|("+_clickable+")|"+
+								"("+_centered+")|("+_center+")|("+_fadein+")|("+_fading+")|("+_floating+")|("+_grayscalemin+")|"+
 								"("+_grayscalemax+")|("+_grayscale+")|("+_hoverable+")|("+_italic+")|("+_left+")|"+
 								"("+_movedown+")|("+_moveleft+")|("+_moveright+")|("+_moveup+")|("+_opacitymin+")|"+
 								"("+_opacitymax+")|("+_opacity+")|("+_overline+")|("+_right+")|("+_sepiamin+")|"+
-								"("+_sepiamax+")|("+_sepia+")|("+_sliding+")|("+_spin+")|("+_strikethrough+")|"+
+								"("+_sepiamax+")|("+_sepia+")|("+_sliding+")|("+_spin+")|("+_strikethrough+")|("+_striped+")|"+
 								"("+_topright+")|("+_topleft+")|("+_top+")|("+_underline+")|("+_zoom+"))"},			
 			{__var,				"^(\\$[a-zA-Z_][a-zA-Z0-9_-]*)"},			
 			{__text,			"^(\"[^\"]*\")"},			
@@ -173,7 +177,6 @@ public class Lexer {
 			{__integer,			"^(0|([1-9][0-9]*))"},			
 			{__measure,			"^((0|[1-9][0-9]*)((px)|(%)))"},			
 			{__bool,			"^(("+_true+")|("+_false+"))"}	
-			//{__identifier,		"^([a-zA-Z_][a-zA-Z0-9_-])"}
 	};
 
 }

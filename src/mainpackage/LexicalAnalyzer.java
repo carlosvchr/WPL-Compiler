@@ -80,7 +80,6 @@ public class LexicalAnalyzer {
 	public Symbol next() {
 		// Primero comprobaremos si hay algún símbolo que deba ser emitido de nuevo
 		if(resendSymbol) {
-//			print(history.sym());
 			resendSymbol = false;
 			return history;
 		}
@@ -152,13 +151,24 @@ public class LexicalAnalyzer {
 			
 			// Por último retornamos el símbolo de la categoría que hizo mejor coincidencia
 			history = new Symbol(Lexer.lexer[index][0], bestMatch);
-//			print(history.sym());
 			return history;
 		
 		}else { // En caso contrario, cargamos la siguiente línea
 			try {
 				// Cuando cargamos la linea comprobamos que no haya ningun break
 				String cline = inputFile.getLine();
+				
+				if(cline != null) {
+					while(cline.trim().endsWith(Lexer.__br)) {
+						String nl = inputFile.getLine();
+						if(nl != null) {
+							cline = trimEnd(cline);	// quitamos espacios finales de linea
+							cline = cline.substring(0, cline.length()-1);	// Eliminamos el símbolo de br 
+							cline += nl.trim();
+						}else { break; }
+					}
+				}
+				
 				// Comprobamos que queden lineas por leer
 				if(cline == null) {
 					// Si no quedan lineas devolvemos el PC de la ultima linea
@@ -275,7 +285,6 @@ public class LexicalAnalyzer {
 	
 	/** Manda a reenviar el último símbolo emitido */
 	public void undo() {
-//		print("undo");
 		resendSymbol = true;
 	}
 	
@@ -286,9 +295,5 @@ public class LexicalAnalyzer {
 		}
 		return c;
 	}
-	
-//	public void print(String s) {
-//		System.out.println(s);
-//	}
 	
 }

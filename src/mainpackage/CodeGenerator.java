@@ -129,7 +129,7 @@ public class CodeGenerator {
 			containerStack.push(s);
 			break;
 		case Lexer._table:
-			currentLine = "<table>";
+			currentLine = "<table class=\"w3-table\">";
 			s[0] = Lexer._table;
 			s[1] = "</table>";
 			containerStack.push(s);
@@ -375,11 +375,20 @@ public class CodeGenerator {
 		case Lexer._src:
 			addAttr("src=\""+values[0]+"\"");
 			break;	
-		case Lexer._spacing:
+		case Lexer._tableattrs:
+			for(int i=0; i<values.length; i++) {
+				switch(values[i]) {
+				case Lexer._bordered: addClass("w3-bordered"); break;
+				case Lexer._centered: addClass("w3-centered"); break;
+				case Lexer._hoverable: addClass("w3-hoverable"); break;
+				case Lexer._striped: addClass("w3-striped"); break;
+				default:break;
+				}
+			}
 			break;
 		case Lexer.__text:
-			String aux = containerStack.peekFirst()[0];
-			if(aux.compareTo(Lexer._dropdown)==0 || aux.compareTo(Lexer._accordion)==0) {
+			String auxtext = containerStack.peekFirst()[0];
+			if(auxtext.compareTo(Lexer._dropdown)==0 || auxtext.compareTo(Lexer._accordion)==0) {
 				String lineaux[] = currentLine.split("</button>");
 				currentLine = lineaux[0] + values[0] + "</button>" + lineaux[1];
 			}else {
