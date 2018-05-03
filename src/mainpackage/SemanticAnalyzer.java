@@ -81,9 +81,8 @@ public class SemanticAnalyzer {
 					Lexer._padding, Lexer._textalign, Lexer._textcolor, Lexer._textdecoration, Lexer._width);
 		case Lexer._sidebar:
 			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
-					Lexer._borderradius, Lexer._collapsible, Lexer._class, Lexer._effect, Lexer._elevation, 
-					Lexer._height, Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, 
-					Lexer._sidebartype, Lexer._width);
+					Lexer._borderradius, Lexer._class, Lexer._effect, Lexer._elevation, Lexer._height, 
+					Lexer._id, Lexer._link, Lexer._margin, Lexer._onclick, Lexer._padding, Lexer._width);
 		case Lexer._table:
 			return validate(-1, val, Lexer._animation, Lexer._bgcolor, Lexer._border, Lexer._bordercolor,
 					Lexer._borderradius, Lexer._class, Lexer._effect, Lexer._elevation, Lexer._fontfamily, 
@@ -154,8 +153,6 @@ public class SemanticAnalyzer {
 			return validate(quantvals, val, Lexer.__measure);
 		case Lexer._class:
 			return validate(1, val, Lexer.__text);
-		case Lexer._collapsible:
-			return validate(1, val, Lexer._true, Lexer._false);
 		case Lexer._controls:
 			return validate(1, val, Lexer._true, Lexer._false);
 		case Lexer._dropdowntype:
@@ -204,8 +201,6 @@ public class SemanticAnalyzer {
 			return validate(1, val, Lexer.__text);
 		case Lexer._selected:
 			return validate(1, val, Lexer._true, Lexer._false);
-		case Lexer._sidebartype:
-			return validate(1, val, Lexer._floating, Lexer._sliding);
 		case Lexer._src:
 			return validate(1, val, Lexer.__text);
 		case Lexer._tableattrs:

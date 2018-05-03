@@ -11,6 +11,7 @@ public class CodeGenerator {
 	int dropdownCounter;
 	int accordionCounter;
 	int filterCounter;
+	int sidebarCounter;
 	
 	Deque<String[]> containerStack;
 	
@@ -31,6 +32,7 @@ public class CodeGenerator {
 		dropdownCounter = 0;
 		accordionCounter = 0;
 		filterCounter = 0;
+		sidebarCounter = 0;
 	}
 	
 	public void startHead() {
@@ -126,7 +128,8 @@ public class CodeGenerator {
 			containerStack.push(s);
 			break;
 		case Lexer._sidebar:
-			currentLine = "<div class=\"w3-sidebar w3-bar-block\">";
+			sidebarCounter++;
+			currentLine = "<div class=\"w3-sidebar w3-bar-block w3-border-right\" style=\"display:none\" >";
 			s[0] = Lexer._sidebar;
 			s[1] = "</div>";
 			containerStack.push(s);
@@ -218,7 +221,7 @@ public class CodeGenerator {
 				addStyle("display:inline-block");
 			}else if(parent[0].compareTo(Lexer._vbox)==0) {
 				containerStack.peekFirst()[1] += "<div style=\"width:100%;\"></div>";
-			}else if(parent[0].compareTo(Lexer._dropdown)==0) {
+			}else if(parent[0].compareTo(Lexer._dropdown)==0 || parent[0].compareTo(Lexer._sidebar)==0) {
 				addClass("w3-bar-item");
 			}
 		}
@@ -296,8 +299,6 @@ public class CodeGenerator {
 			break;
 		case Lexer._class:
 			addClass(values[0]);
-			break;
-		case Lexer._collapsible:
 			break;
 		case Lexer._controls:
 			if(values[0].compareTo(Lexer._true) == 0) addAttr("controls");
@@ -387,9 +388,7 @@ public class CodeGenerator {
 			break;
 		case Lexer._selected:
 			addAttr("checked=\"checked\"");
-			break;
-		case Lexer._sidebartype:
-			break;		
+			break;	
 		case Lexer._src:
 			addAttr("src=\""+values[0]+"\"");
 			break;
@@ -515,6 +514,11 @@ public class CodeGenerator {
 			String[] sp = currentLine.split("class=\"");
 			if(sp.length == 2) {
 				currentLine = sp[0] + "class=\"" + attr + " " + sp[1];
+			}else if(containerStack.peekFirst()[0].compareTo(Lexer._modal)==0) {
+				currentLine = sp[0] + "class=\"" + sp[1] + "class=\"" + attr + " " + sp[2];
+				for(int i=3; i<sp.length; i++) {
+					currentLine += "class=\"" + sp[i];
+				}
 			}
 		}
 	}
@@ -539,20 +543,24 @@ public class CodeGenerator {
 	
 	/** Agrega un atributo a la etiqueta actual */
 	private void addAttr(String attr) {
-		if(containerStack.peekFirst()[0].compareTo(Lexer._modal)==0) {
+		String aux = containerStack.peekFirst()[0];
+		if(aux.compareTo(Lexer._modal)==0 ) {
 			if(attr.startsWith("id")) {
 				String parts[] = currentLine.split("><");
 				currentLine = parts[0] + " " + attr;
 				for(int i=1; i<parts.length; i++) {
 					currentLine += "><" + parts[i];
 				}
+				currentContent = "<span onclick=\"wpl_close('"+clean(attr.split("=")[1])+"')\" "+
+						"style=\"z-index:999;\" class=\"w3-button w3-display-topright\">&times;</span>";
 			}else {
 				currentLine = currentLine.substring(0, currentLine.length()-1)+" "+attr+">";
 			}
-			currentContent = "<span onclick=\"closeModal('"+clean(attr.split("=")[1])+"')\" "+
-							"style=\"z-index:999;\" class=\"w3-button w3-display-topright\">&times;</span>";
 		}else{
 			currentLine = currentLine.substring(0, currentLine.length()-1)+" "+attr+">";
+			if(aux.compareTo(Lexer._sidebar)==0 && attr.startsWith("id")) {
+				currentContent = "<button onclick=\"wpl_close('"+clean(attr.split("=")[1])+"')\" class=\"w3-button w3-bar-item w3-center w3-large\">&times;</button>";
+			}
 		}
 	}
 	
@@ -583,11 +591,11 @@ public class CodeGenerator {
 	/** Genera las funciones predefinidas para el correcto funcionamiento de algunos componentes */
 	private void genPredefinedFunctions() {
 		output.putLine(
-				tabs(2)+"function openModal(identifier) {\n" + 
+				tabs(2)+"function wpl_open(identifier) {\n" + 
 				tabs(3)+"document.getElementById(identifier).style.display='block';\n" + 
 				tabs(2)+"}\n");
 		output.putLine(
-				tabs(2)+"function closeModal(identifier) {\n" + 
+				tabs(2)+"function wpl_close(identifier) {\n" + 
 				tabs(3)+"document.getElementById(identifier).style.display='none';\n" + 
 				tabs(2)+"}\n");
 		output.putLine(

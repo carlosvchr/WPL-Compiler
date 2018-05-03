@@ -63,7 +63,6 @@ public class Lexer {
 	public static final String _borderradius = "border-radius";
 	public static final String _charset = "charset";
 	public static final String _close = "close";
-	public static final String _collapsible = "collapsible";
 	public static final String _class = "class";
 	public static final String _controls = "controls";
 	public static final String _description = "description";
@@ -93,7 +92,6 @@ public class Lexer {
 	public static final String _radiogroup = "radiogroup";
 	public static final String _redirect = "redirect";
 	public static final String _selected = "selected";
-	public static final String _sidebartype = "sidebar-type";
 	public static final String _src = "src";
 	public static final String _tableattrs = "table-attrs";
 	public static final String _textalign = "textalign";
@@ -115,7 +113,6 @@ public class Lexer {
 	public static final String _fadein = "fade-in";
 	public static final String _fading = "fading";
 	public static final String _false = "false";
-	public static final String _floating = "floating";
 	public static final String _grayscale = "grayscale";
 	public static final String _grayscalemax = "grayscale-max";
 	public static final String _grayscalemin = "grayscale-min";
@@ -134,7 +131,6 @@ public class Lexer {
 	public static final String _sepia = "sepia";
 	public static final String _sepiamax = "sepia-max";
 	public static final String _sepiamin = "sepia-min";
-	public static final String _sliding = "sliding";
 	public static final String _spin = "spin";
 	public static final String _strikethrough = "strikethrough";
 	public static final String _striped = "striped";
@@ -164,22 +160,22 @@ public class Lexer {
 		{_close,			"^("+_close+")"},
 		{__component,		"^(("+_audio+")|("+_button+")|("+_checkbox+")|("+_image+")|("+_label+")|"+
 							"("+_radiobutton+")|("+_textfield+")|("+_video+"))"},			
-		{__attr,			"^(("+_align+")|("+_alt+")|("+_animation+")|("+_author+")|("+_autoplay+")|("+_collapsible+")|"+
+		{__attr,			"^(("+_align+")|("+_alt+")|("+_animation+")|("+_author+")|("+_autoplay+")|"+
 							"("+_bgcolor+")|("+_bordercolor+")|("+_borderradius+")|("+_border+")|("+_charset+")|"+
 							"("+_class+")|("+_controls+")|("+_description+")|("+_dropdowntype+")|("+_effect+")|"+
 							"("+_elevation+")|("+_filtertable+")|("+_filterdropdown+")|("+_fontfamily+")|("+_fontsize+")|"+
 							"("+_height+")|("+_id+")|("+_keywords+")|("+_lang+")|("+_link+")|("+_loop+")|("+_margin+")|"+
 							"("+_muted+")|("+_onchange+")|("+_onclick+")|("+_padding+")|("+_pageicon+")|"+
 							"("+_placeholder+")|("+_poster+")|("+_preload+")|("+_radiogroup+")|("+_redirect+")|"+
-							"("+_selected+")|("+_sidebartype+")|("+_src+")|("+_tableattrs+")|"+
+							"("+_selected+")|("+_src+")|("+_tableattrs+")|"+
 							"("+_textalign+")|("+_textcolor+")|("+_textdecoration+")|"+
 							"("+_title+")|("+_tooltip+")|("+_width+"))"},			
 		{__val,				"^(("+_bold+")|("+_bordered+")|("+_bottomright+")|("+_bottomleft+")|("+_bottom+")|("+_clickable+")|"+
-							"("+_centered+")|("+_center+")|("+_fadein+")|("+_fading+")|("+_floating+")|("+_grayscalemin+")|"+
+							"("+_centered+")|("+_center+")|("+_fadein+")|("+_fading+")|("+_grayscalemin+")|"+
 							"("+_grayscalemax+")|("+_grayscale+")|("+_hoverable+")|("+_italic+")|("+_left+")|"+
 							"("+_movedown+")|("+_moveleft+")|("+_moveright+")|("+_moveup+")|("+_opacitymin+")|"+
 							"("+_opacitymax+")|("+_opacity+")|("+_overline+")|("+_right+")|("+_sepiamin+")|"+
-							"("+_sepiamax+")|("+_sepia+")|("+_sliding+")|("+_spin+")|("+_strikethrough+")|("+_striped+")|"+
+							"("+_sepiamax+")|("+_sepia+")|("+_spin+")|("+_strikethrough+")|("+_striped+")|"+
 							"("+_topright+")|("+_topleft+")|("+_top+")|("+_underline+")|("+_zoom+"))"},			
 		{__var,				"^(\\$[a-zA-Z_][a-zA-Z0-9_-]*)"},			
 		{__text,			"^(\"[^\"]*\")"},			
