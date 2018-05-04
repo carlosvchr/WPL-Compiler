@@ -11,10 +11,17 @@ public class Symbol {
 
 	private String symbol;
 	private String value;
+	private long line;
 	
-	public Symbol(String symbol, String value) {
+//	public Symbol(String symbol, String value) {
+//		this.symbol = symbol;
+//		this.value = value;
+//	}
+	
+	public Symbol(String symbol, String value, long line) {
 		this.symbol = symbol;
 		this.value = value;
+		this.line = line;
 	}
 	
 	/** Obtiene el símbolo */
@@ -35,6 +42,11 @@ public class Symbol {
 	/** Modifica el identificador del símbolo */
 	public void setSym(String v) {
 		this.symbol = v;
+	}
+	
+	/** Devuelve la linea donde se ha leido el simbolo */
+	public long getLine() {
+		return this.line;
 	}
 	
 }

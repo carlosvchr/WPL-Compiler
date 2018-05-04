@@ -4,11 +4,11 @@ import java.util.Arrays;
 
 public class SemanticAnalyzer {
 
-	LexicalAnalyzer lex;
+	private CodeGenerator gen;
 	private Symbol currentAttr;
 	
-	public SemanticAnalyzer(LexicalAnalyzer lex) {
-		this.lex = lex;
+	public SemanticAnalyzer(CodeGenerator gen) {
+		this.gen = gen;
 	}
 	
 	public boolean validate(Symbol attr, Symbol[] val) {
@@ -242,7 +242,7 @@ public class SemanticAnalyzer {
 		// nvals=-1 significa que puede haber un número indefinido de parámetros
 		wrongNVals = (nvals[0] == -1) ? false : wrongNVals;
 		if(wrongNVals) {
-			wrongNumberOfValues();
+			wrongNumberOfValues(currentAttr);
 			return false;
 		}
 		
@@ -262,8 +262,7 @@ public class SemanticAnalyzer {
 				
 			}
 			if(wrongSym) {
-				System.out.println("Error on "+sy.val()+" - "+sy.sym());
-				printSemanticError();
+				printSemanticError(sy);
 				return false;
 			}
 		}
@@ -272,13 +271,15 @@ public class SemanticAnalyzer {
 	}
 	
 	/** Imprime un mensaje de error: Número de parametros inválido */
-	private void wrongNumberOfValues(){
-		System.err.println("Semantic error on line "+lex.getLineNumber()+". Too many values.");
+	private void wrongNumberOfValues(Symbol s){
+		gen.abort();
+		System.err.println("Error on line "+s.getLine()+". "+currentAttr.val()+" has an incorrect number of values.");
 	}
 	
 	/** Imprime un mensaje de error: Error semántico */
-	private void printSemanticError() {
-		System.err.println("Semantic error on line "+lex.getLineNumber()+". "+currentAttr.val());
+	private void printSemanticError(Symbol s) {
+		gen.abort();
+		System.err.println("Error on line "+s.getLine()+". "+currentAttr.val()+" and "+s.val()+" are incompatible.");
 	}
 	
 //	private void print(Symbol s, Symbol vals[]) {

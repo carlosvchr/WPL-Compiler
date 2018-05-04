@@ -1,17 +1,18 @@
 package mainpackage;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
 public class CodeGenerator {
 
-	IOManager output;
-	String path;
-	int dropdownCounter;
-	int accordionCounter;
-	int filterCounter;
-	int sidebarCounter;
+	private IOManager output;
+	private String path;
+	private int dropdownCounter;
+	private int accordionCounter;
+	private int filterCounter;
+	private boolean aborted;
 	
 	Deque<String[]> containerStack;
 	
@@ -32,10 +33,11 @@ public class CodeGenerator {
 		dropdownCounter = 0;
 		accordionCounter = 0;
 		filterCounter = 0;
-		sidebarCounter = 0;
+		aborted = false;
 	}
 	
 	public void startHead() {
+		if(aborted)return;
 		output.openForWrite(path);
 		output.putLine("<!Doctype html>\n<html>\n<head>");
 		output.putLine("\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
@@ -49,6 +51,7 @@ public class CodeGenerator {
 	
 	/** Genera todos los metadatos de la página */
 	public void genMetadata(String[] meta) {
+		if(aborted)return;
 		switch(meta[0]) {
 		case Lexer._charset:
 			output.putLine(tabs(1)+"<meta charset="+meta[1]+">");
@@ -80,6 +83,7 @@ public class CodeGenerator {
 	
 	/** Genera el código necesario para incluir un fichero css o javascript */
 	public void genImport(String path) {
+		if(aborted)return;
 		if(path.endsWith(".css\"")) {
 			output.putLine(tabs(1)+"<link rel=\"stylesheet\" href="+path+">");
 		}else if(path.endsWith(".js\"")) {
@@ -89,6 +93,7 @@ public class CodeGenerator {
 	
 	/** Termina de generar código en el head y empieza a generarlo en el body */
 	public void startBody() {
+		if(aborted)return;
 		output.putLine("</head>\n<body>");
 		// Aqui antes de head tabs = 1, entre head y body = 0 y despues de body 1, por lo que lo dejamos igual
 		// y simplemente no emitimos tabs entre head y body
@@ -97,6 +102,7 @@ public class CodeGenerator {
 	
 	/** Aquí se generan todas las sentencias del body */
 	public void openTag(String tag) {
+		if(aborted)return;
 		String parent[] = containerStack.peekFirst();
 		String s[] = new String[2];
 		switch(tag) {
@@ -129,7 +135,6 @@ public class CodeGenerator {
 			containerStack.push(s);
 			break;
 		case Lexer._sidebar:
-			sidebarCounter++;
 			currentLine = "<div class=\"w3-sidebar w3-bar-block w3-border-right\" style=\"display:none\" >";
 			s[0] = Lexer._sidebar;
 			s[1] = "</div>";
@@ -231,17 +236,20 @@ public class CodeGenerator {
 	
 	/** Escribe html */
 	public void genHtml(String s) {
+		if(aborted)return;
 		output.putLine(tabs(1)+clean(s));
 	}
 	
 	/** Escribe los atributos de las etiquetas */
 	public void genAttrs(String attrs, String val) {
+		if(aborted)return;
 		String values[] = {val};
 		genAttrs(attrs, values);
 	}
 	
 	/** Escribe los atributos de las etiquetas */
 	public void genAttrs(String attr, Symbol[] values) {
+		if(aborted)return;
 		String strl[] = new String[values.length];
 		for(int i=0; i<values.length; i++) {
 			strl[i] = values[i].val();
@@ -251,6 +259,7 @@ public class CodeGenerator {
 	
 	/** Escribe los atributos de las etiquetas */
 	public void genAttrs(String attr, String[] values) {
+		if(aborted)return;
 		for(int i=0; i<values.length; i++) {
 			values[i] = clean(values[i]);
 		}
@@ -442,6 +451,7 @@ public class CodeGenerator {
 	
 	/** Termina de escribir la etiqueta de apertura para proceder al contenido */
 	public void finishOpenTag() {
+		if(aborted)return;
 		output.putString(tabs()+currentLine+"\n");
 		if(currentContent.length() > 0) {
 			output.putLine(tabs(1)+currentContent);
@@ -451,17 +461,20 @@ public class CodeGenerator {
 	
 	/** Escribe contenido entre las etiquetas */
 	public void genContent(String s) {
+		if(aborted)return;
 		output.putString(s);
 	}
 	
 	/** Cierra la etiqueta abierta */
 	public void closeTag() {
+		if(aborted)return;
 		output.putLine(tabs()+containerStack.pop()[1]);
 	}
 	
 	
 	/** Termina de escribir el fichero */
 	public void end() {
+		if(aborted)return;
 		output.putLine("</body>\n</html>");
 		try {
 			output.close();
@@ -473,13 +486,25 @@ public class CodeGenerator {
 	
 	/** Aborta la generación de código cuando se ha producido un error */
 	public void abort() {
+		aborted = true;
 		try {
 			output.close();
+			File f = new File(path);
+			if(f.exists()) {
+				if(!f.delete()) {
+					System.err.println("Error when aborting the code generation.");
+				}
+			}
 		} catch (IOException e) {
-			System.err.println("Code Generator: Error when closing the file.");
+			System.err.println("Error when closing the source file.");
 			e.printStackTrace();
 		}
 		output.deleteFile(path);
+	}
+	
+	/** Devuelve true si la generación de código ha sido abortada */
+	public boolean isAborted() {
+		return aborted;
 	}
 
 	

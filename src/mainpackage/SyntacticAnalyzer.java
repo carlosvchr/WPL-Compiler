@@ -52,29 +52,28 @@ public class SyntacticAnalyzer {
 //	
 //	// CodeGenerator es la clase que genera el código
 	CodeGenerator gen = null;
-//	
-//	// Pila donde registramos las etiquetas abiertas para cerrarlas cuando llegue un cp
-//	ArrayDeque<Symbol> openedTagsStac;
-//	
-//	
+
+	
 	/** @param Fichero fuente 
 	 *  @param Fichero donde se genera el código */
 	public SyntacticAnalyzer(String path, String output) {
 		gen = new CodeGenerator(output);	
-		lex = new LexicalAnalyzer();
-		sem = new SemanticAnalyzer(lex);
+		lex = new LexicalAnalyzer(gen);
+		sem = new SemanticAnalyzer(gen);
 		lex.start(path);
 	}
 	
 	/** Inicia el procesado del fuente */
-	public void start() {
+	public boolean start() {
 		analyzeProgram();
+		return !gen.isAborted();
 	}
 	
 	/** Muestra un mensaje de error sintáctico */
-	private void printSyntacticError(String s) {
+	private void printSyntacticError(String s, long nline) {
+		gen.abort();
 		Symbol saux = lex.next();
-		System.err.println("Syntactic error on line "+lex.getLineNumber()+". Found: "+saux.val()+"; Expected: "+s);
+		System.err.println("Error on line "+nline+". "+saux.val()+" "+s);
 	}
 	
 //	/** Intenta llegar a un punto seguro tras un error para retomar el análisis */
@@ -149,7 +148,7 @@ public class SyntacticAnalyzer {
 		analyze(NT.TAG);
 		
 		if(lex.nextAndUndo().sym() != Lexer.__end) {
-			printSyntacticError("$ program");
+			printSyntacticError("End of file.", lex.nextAndUndo().getLine());
 			return false;
 		}
 		
@@ -205,7 +204,7 @@ public class SyntacticAnalyzer {
 		else if(analyze(NT.TABLE)!=null);
 		else if(analyze(NT.DEFINES)!=null);
 		else if(analyze(NT.HTML)!=null);
-		else printSyntacticError("TAGS");
+		else printSyntacticError("Container or Component", lex.nextAndUndo().getLine());
 		analyze(NT.TAG);
 	}
 	
@@ -384,8 +383,14 @@ public class SyntacticAnalyzer {
 		
 		}
 		if(next.compareTo(terminal) != 0) {
-			if(!nullable)
-				printSyntacticError(terminal);
+			if(!nullable) {
+				lex.undo();
+				String error = "";
+				if(terminal.compareTo(Lexer.__cp)==0 && ns.sym().compareTo(Lexer.__op)==0)
+					error = "cannot have nested labels";
+				
+				printSyntacticError(error, ns.getLine());
+			}
 			return null;
 		}	
 		return ns;
@@ -426,7 +431,7 @@ public class SyntacticAnalyzer {
 			if(match) {	analyzeOpen(); return notnull; } else { return null; }
 		case CLOSE:
 			if(match) {	analyzeClose(); return notnull; } else { return null; }
-		default: System.out.println("UNEXPECTED ERROR. Contact Support."); return null;
+		default: return null;
 		}
 	}
 	

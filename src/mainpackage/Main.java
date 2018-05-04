@@ -14,17 +14,20 @@ public class Main {
 		String output = "/home/carlos/Escritorio/pruebasOutput.html";
 		
 		SyntacticAnalyzer syntacticAnalyzer = new SyntacticAnalyzer(path, output);
-		syntacticAnalyzer.start();
+		boolean compilation = syntacticAnalyzer.start();
 		
 //		testLexical(path);
-		
-		System.out.println("Compilation successfully.");
+		if(compilation) {
+			System.out.println("Compilation successfully.");
+		}else {
+			System.err.println("Unresolved compilation problems.");
+		}
 	}
 
 	
 	/** Imprime los símbolos generados por el analizador léxico */
 	public static void testLexical(String path) {
-		LexicalAnalyzer la = new LexicalAnalyzer();
+		LexicalAnalyzer la = new LexicalAnalyzer(new CodeGenerator(""));
 		la.start(path);
 		
 		Symbol s;

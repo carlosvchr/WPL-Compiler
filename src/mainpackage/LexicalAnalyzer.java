@@ -23,11 +23,16 @@ public class LexicalAnalyzer {
 	private int closeStack;		// Pila de CP consecutivos para que emitan uno por llamada
 	private int openedP;		// Permite conocer cuantos OP hay abiertos 
 	private boolean emmitedFinalPC; // Indicador de que se ha emitido el PC de la ultima linea del fichero
+	private CodeGenerator gen;	// Pointer to code generator to abort in case of error
 	
 	/** Debido a que el analizador sintáctico va pidiendo al analizador léxico
 	 * los símbolos uno por uno, se requiere un función que procese el fuente
 	 * de forma que cada vez que sea llamado devuelva el siguiente símbolo al
 	 * de la llamada anterior. */
+	
+	public LexicalAnalyzer(CodeGenerator gen) {
+		this.gen = gen;
+	}
 	
 	/* El analizador léxico será implementado a través de un MDD */
 	public void start(String path) 
@@ -60,7 +65,7 @@ public class LexicalAnalyzer {
 			// Abrimos el archivo en modo lectura
 			inputFile.openForRead(path, false);
 		} catch (IOException e) {
-			System.err.println("Lexical Analyzer: Error when opening source file.");
+			System.err.println("Error when opening source file.");
 			e.printStackTrace();
 		}
 		
@@ -78,7 +83,7 @@ public class LexicalAnalyzer {
 				}
 			}
 		} catch (IOException e) {
-			System.err.println("Error: File is empty.");
+			System.err.println("Error, empty file.");
 			e.printStackTrace();
 		}
 		closeStack = 0;
@@ -98,7 +103,7 @@ public class LexicalAnalyzer {
 		if(closeStack > 0) {
 			closeStack--;
 			openedP--;
-			history = new Symbol(CP, "cp");
+			history = new Symbol(CP, "cp", inputFile.getLineNumber());
 			return history;
 		}
 		
@@ -136,7 +141,8 @@ public class LexicalAnalyzer {
 				 * a la siguiente línea con el objetivo de encontrar todos los 
 				 * errores en una sola compilación*/
 				
-				// Imprimimos error
+				// Imprimimos error y abortamos la generación de código
+				gen.abort();
 				System.err.println("Lexical error on line "+inputFile.getLineNumber()+". Unexpected input: "+line);
 				
 				// Saltamos la línea actual
@@ -169,7 +175,7 @@ public class LexicalAnalyzer {
 			}
 			
 			// Por último retornamos el símbolo de la categoría que hizo mejor coincidencia
-			history = new Symbol(Lexer.lexer[index][0], bestMatch);
+			history = new Symbol(Lexer.lexer[index][0], bestMatch, inputFile.getLineNumber());
 			return history;
 		
 		}else { // En caso contrario, cargamos la siguiente línea
@@ -195,17 +201,17 @@ public class LexicalAnalyzer {
 						emmitedFinalPC = true;
 						// Comprobamos que no se haya emitido ya un PC
 						if(history.sym().compareTo(PC) != 0) {
-							history = new Symbol(PC, "pc");
+							history = new Symbol(PC, "pc", inputFile.getLineNumber());
 							return history;
 						}
 					}
 					// Y ahora vamos devolviendo los CP que esten abiertos
 					if(openedP > 0) {
 						openedP--;
-						history = new Symbol(CP, "cp");
+						history = new Symbol(CP, "cp", inputFile.getLineNumber());
 						return history;
 					}else {
-						history = new Symbol(Lexer.__end, Lexer.__end);
+						history = new Symbol(Lexer.__end, Lexer.__end, inputFile.getLineNumber());
 						return history;
 					}
 				}
@@ -258,20 +264,20 @@ public class LexicalAnalyzer {
 			// Si es mayor, emitimos op, si es menor cp, en caso contrario pc, para separar sentencias
 			if(ntabs > tabCont) {
 				tabCont = ntabs;
-				history = new Symbol(OP, "op");
+				history = new Symbol(OP, "op", inputFile.getLineNumber());
 				openedP++;
 				return history;
 			}else if(ntabs < tabCont) {
 				// Hacemos una pila para que si hay que devolver mas cierres, se haga en las siguientes llamadas
 				closeStack = tabCont - ntabs;
 				tabCont = ntabs;
-				history = new Symbol(PC, "pc");	// Devolvemos PC que debe ir antes de CP
+				history = new Symbol(PC, "pc", inputFile.getLineNumber());	// Devolvemos PC que debe ir antes de CP
 				return history;
 			}else {  // Si es una linea normal
 				// Comprobamos que no se haya emitido ya un PC, que se emita al comienzo o despues de OP, CP o DP
 				if(history != null && history.sym().compareTo(PC) != 0 && history.sym().compareTo(OP) != 0
 						&& history.sym().compareTo(CP) != 0 && history.sym().compareTo(DP) != 0) {
-					history = new Symbol(PC, "pc");
+					history = new Symbol(PC, "pc", inputFile.getLineNumber());
 					return history;
 				}else {
 					return next();
@@ -292,20 +298,12 @@ public class LexicalAnalyzer {
 		return inputFile.getLineNumber();
 	}
 	
-	/** Cierra los ficheros utilizados por el analizador léxico */
-	public void end() {
-		try {
-			inputFile.close();
-		} catch (IOException e) {
-			System.err.println("Lexical Analyzer: Error when closing source file.");
-			e.printStackTrace();
-		}
-	}
 	
 	/** Manda a reenviar el último símbolo emitido */
 	public void undo() {
 		resendSymbol = true;
 	}
+	
 	
 	/** Elimina los blancos al final de las lineas */
 	public String trimEnd(String c) {
