@@ -24,6 +24,7 @@ public class LexicalAnalyzer {
 	private int openedP;		// Permite conocer cuantos OP hay abiertos 
 	private boolean emmitedFinalPC; // Indicador de que se ha emitido el PC de la ultima linea del fichero
 	private CodeGenerator gen;	// Pointer to code generator to abort in case of error
+	private boolean endEmmited;
 	
 	/** Debido a que el analizador sintáctico va pidiendo al analizador léxico
 	 * los símbolos uno por uno, se requiere un función que procese el fuente
@@ -60,6 +61,7 @@ public class LexicalAnalyzer {
 		// Creamos un objeto para leer y otro para escribir ficheros.
 		inputFile = new IOManager();
 		tabCont = 0;	//Iniciamos el contador
+		endEmmited = false;
 		
 		try {
 			// Abrimos el archivo en modo lectura
@@ -143,7 +145,7 @@ public class LexicalAnalyzer {
 				
 				// Imprimimos error y abortamos la generación de código
 				gen.abort();
-				System.err.println("Lexical error on line "+inputFile.getLineNumber()+". Unexpected input: "+line);
+				System.err.println("Error on line "+inputFile.getLineNumber()+". Unexpected input ("+line+")");
 				
 				// Saltamos la línea actual
 				line = "";
@@ -210,9 +212,12 @@ public class LexicalAnalyzer {
 						openedP--;
 						history = new Symbol(CP, "cp", inputFile.getLineNumber());
 						return history;
-					}else {
+					}else if(!endEmmited){
+						endEmmited = true;
 						history = new Symbol(Lexer.__end, Lexer.__end, inputFile.getLineNumber());
 						return history;
+					}else {
+						return null;
 					}
 				}
 				// Si es distinto de null, entonces leemos la linea
