@@ -7,7 +7,7 @@ package mainpackage;
  * 
  * */
 
-public class Symbol {
+class Symbol {
 
 	private String symbol;
 	private String value;

@@ -2,13 +2,15 @@ package mainpackage;
 
 import java.util.Arrays;
 
-public class SemanticAnalyzer {
+class SemanticAnalyzer {
 
 	private CodeGenerator gen;
 	private Symbol currentAttr;
+	private CompResult results;
 	
-	public SemanticAnalyzer(CodeGenerator gen) {
+	public SemanticAnalyzer(CodeGenerator gen, CompResult cr) {
 		this.gen = gen;
+		results = cr;
 	}
 	
 	public boolean validate(Symbol attr, Symbol[] val) {
@@ -274,12 +276,14 @@ public class SemanticAnalyzer {
 	private void wrongNumberOfValues(Symbol s){
 		gen.abort();
 		System.err.println("Error on line "+s.getLine()+". "+currentAttr.val()+" has an incorrect number of values.");
+		results.add("Error on line "+s.getLine()+". "+currentAttr.val()+" has an incorrect number of values.");
 	}
 	
 	/** Imprime un mensaje de error: Error semántico */
 	private void printSemanticError(Symbol s) {
 		gen.abort();
 		System.err.println("Error on line "+s.getLine()+". "+currentAttr.val()+" and "+s.val()+" are incompatible.");
+		results.add("Error on line "+s.getLine()+". "+currentAttr.val()+" and "+s.val()+" are incompatible.");
 	}
 	
 //	private void print(Symbol s, Symbol vals[]) {

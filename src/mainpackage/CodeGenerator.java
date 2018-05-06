@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public class CodeGenerator {
+class CodeGenerator {
 
 	private IOManager output;
 	private String path;
@@ -305,7 +305,7 @@ public class CodeGenerator {
 				currentLine = currentLine.replace("w3-dropdown-hover", "w3-dropdown-click");
 				String aux[] = currentLine.split("<button");
 				currentLine = aux[0] + "<button onclick=\"toggleDropdown('dropdown"+dropdownCounter+"')\""+aux[1];
-				currentLine = currentLine.substring(0, currentLine.length()-1) + " onclick=\"toggleDropdown('dropdown"+dropdownCounter+"')\">";			
+				currentLine = currentLine.substring(0, currentLine.length()-1) + ">";			
 			}
 			break;
 		case Lexer._effect:

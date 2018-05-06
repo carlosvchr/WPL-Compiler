@@ -2,7 +2,7 @@ package mainpackage;
 
 import java.io.IOException;
 
-public class LexicalAnalyzer {
+class LexicalAnalyzer {
 
 	private final String OP = "op";
 	private final String CP = "cp";
@@ -25,14 +25,16 @@ public class LexicalAnalyzer {
 	private boolean emmitedFinalPC; // Indicador de que se ha emitido el PC de la ultima linea del fichero
 	private CodeGenerator gen;	// Pointer to code generator to abort in case of error
 	private boolean endEmmited;
+	private CompResult results;
 	
 	/** Debido a que el analizador sintáctico va pidiendo al analizador léxico
 	 * los símbolos uno por uno, se requiere un función que procese el fuente
 	 * de forma que cada vez que sea llamado devuelva el siguiente símbolo al
 	 * de la llamada anterior. */
 	
-	public LexicalAnalyzer(CodeGenerator gen) {
+	public LexicalAnalyzer(CodeGenerator gen, CompResult cr) {
 		this.gen = gen;
+		results = cr;
 	}
 	
 	/* El analizador léxico será implementado a través de un MDD */
@@ -146,6 +148,7 @@ public class LexicalAnalyzer {
 				// Imprimimos error y abortamos la generación de código
 				gen.abort();
 				System.err.println("Error on line "+inputFile.getLineNumber()+". Unexpected input ("+line+")");
+				results.add("Error on line "+inputFile.getLineNumber()+". Unexpected input ("+line+")");
 				
 				// Saltamos la línea actual
 				line = "";

@@ -2,7 +2,7 @@ package mainpackage;
 
 import java.util.Stack;
 
-public class SyntacticAnalyzer {
+class SyntacticAnalyzer {
 	
 	/** En esta clase se procede con la siguiente implementación: *********************************************
 	 * 
@@ -55,20 +55,23 @@ public class SyntacticAnalyzer {
 	
 	// Analizador léxico al que iremos requiriendo símbolos
 	LexicalAnalyzer lex = null;
-//	
-//	// Analizador semantico que comprobara que los valores asociados a los atributos son correctos
+
+	// Analizador semantico que comprobara que los valores asociados a los atributos son correctos
 	SemanticAnalyzer sem = null;
-//	
-//	// CodeGenerator es la clase que genera el código
+
+	// CodeGenerator es la clase que genera el código
 	CodeGenerator gen = null;
 
+	// CompResult es donde escibiremos los errores
+	CompResult results = null;
 	
 	/** @param Fichero fuente 
 	 *  @param Fichero donde se genera el código */
-	public SyntacticAnalyzer(String path, String output) {
+	public SyntacticAnalyzer(String path, String output, CompResult cr) {
+		results = cr;
 		gen = new CodeGenerator(output);	
-		lex = new LexicalAnalyzer(gen);
-		sem = new SemanticAnalyzer(gen);
+		lex = new LexicalAnalyzer(gen, cr);
+		sem = new SemanticAnalyzer(gen, cr);
 		lex.start(path);
 		currentNonTerminal = new Stack<>();
 		panicMode = false;
@@ -84,6 +87,7 @@ public class SyntacticAnalyzer {
 	private void printSyntacticError(String s, long nline) {
 		gen.abort();
 		System.err.println("Error on line "+nline+". "+s);
+		results.add("Error on line "+nline+". "+s);
 		synchro();
 	}
 	
@@ -96,7 +100,9 @@ public class SyntacticAnalyzer {
 		while(!foundSync) {
 			s = lex.next();
 			if(s != null) {
-				if(following(currentNonTerminal.peek(), s.sym())) foundSync = true;
+				if(!currentNonTerminal.isEmpty()) {
+					if(following(currentNonTerminal.peek(), s.sym())) foundSync = true;
+				}else {return;}	
 			}else {
 				System.err.println("Error irrecuperable.");
 				return;
@@ -107,7 +113,8 @@ public class SyntacticAnalyzer {
 	
 	/** procesos de finalización comunes de los no terminales */
 	private void endFunc() {
-		currentNonTerminal.pop();
+		if(!currentNonTerminal.isEmpty())
+			currentNonTerminal.pop();
 		panicMode = false;
 	}
 
@@ -254,7 +261,7 @@ public class SyntacticAnalyzer {
 		}
 		
 		if(lex.nextAndUndo().sym() != Lexer.__end) {
-			printSyntacticError("End of file.", lex.nextAndUndo().getLine());
+			printSyntacticError("Unexpected end of file.", lex.nextAndUndo().getLine());
 			return false;
 		}
 		

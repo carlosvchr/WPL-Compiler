@@ -13,7 +13,9 @@ public class Main {
 		String path = "/home/carlos/Escritorio/pruebaswpl.txt";
 		String output = "/home/carlos/Escritorio/pruebasOutput.html";
 		
-		SyntacticAnalyzer syntacticAnalyzer = new SyntacticAnalyzer(path, output);
+		CompResult cr = new CompResult();
+		
+		SyntacticAnalyzer syntacticAnalyzer = new SyntacticAnalyzer(path, output, cr);
 		boolean compilation = syntacticAnalyzer.start();
 		
 //		testLexical(path);
@@ -27,7 +29,7 @@ public class Main {
 	
 	/** Imprime los símbolos generados por el analizador léxico */
 	public static void testLexical(String path) {
-		LexicalAnalyzer la = new LexicalAnalyzer(new CodeGenerator(""));
+		LexicalAnalyzer la = new LexicalAnalyzer(new CodeGenerator(""), new CompResult());
 		la.start(path);
 		
 		Symbol s;

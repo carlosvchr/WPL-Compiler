@@ -2,7 +2,7 @@ package mainpackage;
 
 import java.util.regex.*;
 
-public class REManager {
+class REManager {
 	
 	private static Pattern pattern;
 	
