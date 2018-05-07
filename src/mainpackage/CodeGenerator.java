@@ -22,7 +22,7 @@ class CodeGenerator {
 	// Este atributo almacena el contenido que irá entre las etiquetas de la linea actual (del currentLine)
 	String currentContent;
 	
-	/** Proceso: startHead() -> genMetadata()* -> genImports()* -> startBody() -> generate()* -> end() */
+	/** Proceso: startHead() -> genMetadata()* -> genImports()* -> startBody() -> generate()* -> end() ||*/
 	
 	public CodeGenerator(String path) {
 		this.path = path;

@@ -483,6 +483,8 @@ class SyntacticAnalyzer {
 		analyze(Lexer.__dp, false);
 		Symbol v[] = analyze(NT.VALS);
 		sem.validate(at, v);
+		if(v!=null)
+			for(int i=0; i<v.length; i++) if(v[i].sym().compareTo(Lexer.__var)==0) v[i]=sem.getVar(v[i]);
 		analyze(Lexer.__pc, false);
 		gen.genAttrs(at.val(), v);
 		endFunc();

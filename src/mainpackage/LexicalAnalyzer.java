@@ -24,8 +24,8 @@ class LexicalAnalyzer {
 	private int openedP;		// Permite conocer cuantos OP hay abiertos 
 	private boolean emmitedFinalPC; // Indicador de que se ha emitido el PC de la ultima linea del fichero
 	private CodeGenerator gen;	// Pointer to code generator to abort in case of error
-	private boolean endEmmited;
-	private CompResult results;
+	private boolean endEmmited;	// Comprueba que se ha emitido el simbolo fin de fichero
+	private CompResult results;	// Redirige la salida de errores
 	
 	/** Debido a que el analizador sintáctico va pidiendo al analizador léxico
 	 * los símbolos uno por uno, se requiere un función que procese el fuente

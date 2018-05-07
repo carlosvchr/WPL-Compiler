@@ -1,16 +1,19 @@
 package mainpackage;
 
 import java.util.Arrays;
+import java.util.Hashtable;
 
 class SemanticAnalyzer {
 
 	private CodeGenerator gen;
 	private Symbol currentAttr;
 	private CompResult results;
+	private Hashtable<String, Symbol> symbolTable; // Tabla para sustituir variables
 	
 	public SemanticAnalyzer(CodeGenerator gen, CompResult cr) {
 		this.gen = gen;
 		results = cr;
+		symbolTable = new Hashtable<>();
 	}
 	
 	public boolean validate(Symbol attr, Symbol[] val) {
@@ -51,9 +54,12 @@ class SemanticAnalyzer {
 			}
 		case Lexer._define:
 			if(val.length == 2) {
-				if(validate(1, Arrays.copyOfRange(val, 0, 1), Lexer.__var))
-					return validate(1, Arrays.copyOfRange(val, 1, 2), Lexer.__text);
-				else {
+				if(val[0].sym().compareTo(Lexer.__var)==0) {
+					if (validate(1, Arrays.copyOfRange(val, 1, 2), Lexer.__text, Lexer.__measure, Lexer.__integer, Lexer.__bool, Lexer.__color)) {
+						symbolTable.put(val[0].val(), new Symbol(val[1].sym(), val[1].val(), attr.getLine()));
+						return true;
+					}else return false;
+				}else {
 					printSemanticError(val[0]);
 					return false;
 				}
@@ -277,6 +283,17 @@ class SemanticAnalyzer {
 		}
 		
 		for(Symbol sy : vals) {
+			// Buscamos el simbolo correspondiente a la variable
+			if(sy.sym().compareTo(Lexer.__var)==0) {
+				Symbol aux = symbolTable.get(sy.val());
+				if(aux!=null)
+					sy = new Symbol(aux.sym(), aux.val(), sy.getLine());
+				else {
+					printVariableError(sy);
+					return false;
+				}
+			}
+
 			boolean wrongSym = true;
 			for(String str : lexparams) {
 				if(sy.sym()==Lexer.__meta || sy.sym()==Lexer.__container || sy.sym()==Lexer.__val ||
@@ -314,11 +331,17 @@ class SemanticAnalyzer {
 		results.add("Error on line "+s.getLine()+". "+currentAttr.val()+" and "+s.val()+" are incompatible.");
 	}
 	
-//	private void print(Symbol s, Symbol vals[]) {
-//		System.out.print("Attr: "+s.val()+"; Vals:");
-//		for(Symbol sym : vals) {
-//			System.out.print(" "+sym.val());
-//		}
-//		System.out.println();
-//	}
+	/** Imprime un mensaje de error: Error variable no declarada */
+	private void printVariableError(Symbol s) {
+		gen.abort();
+		System.err.println("Error on line "+s.getLine()+". Variable "+s.val()+" has not been defined.");
+		results.add("Error on line "+s.getLine()+". Variable "+s.val()+" has not been defined.");
+	}
+	
+	
+	public Symbol getVar(Symbol s) {
+		if(symbolTable.containsKey(s.val()))
+			return symbolTable.get(s.val());
+		else return null;
+	}
 }
