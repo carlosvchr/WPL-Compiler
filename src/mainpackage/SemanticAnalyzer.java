@@ -40,13 +40,27 @@ class SemanticAnalyzer {
 		case Lexer._redirect:
 			if(val.length == 2) {
 				if(validate(1, Arrays.copyOfRange(val, 0, 1), Lexer.__integer))
-					return validate(1, Arrays.copyOfRange(val, 1, 2), Lexer.__text);				
-			}else return false;
+					return validate(1, Arrays.copyOfRange(val, 1, 2), Lexer.__text);
+				else {
+					printSemanticError(val[0]);
+					return false;
+				}
+			}else {
+				wrongNumberOfValues(attr);
+				return false;
+			}
 		case Lexer._define:
 			if(val.length == 2) {
 				if(validate(1, Arrays.copyOfRange(val, 0, 1), Lexer.__var))
-					return validate(1, Arrays.copyOfRange(val, 1, 2), Lexer.__text);				
-			}else return false;
+					return validate(1, Arrays.copyOfRange(val, 1, 2), Lexer.__text);
+				else {
+					printSemanticError(val[0]);
+					return false;
+				}
+			}else {
+				wrongNumberOfValues(attr);
+				return false;
+			}
 		case Lexer._accordion:
 			return validate(-1, val, Lexer._animation,  Lexer._bgcolor,  Lexer._border,  Lexer._bordercolor, 
 					Lexer._borderradius,  Lexer._class,  Lexer._effect,  Lexer._elevation, Lexer._fixedposition,
@@ -169,13 +183,27 @@ class SemanticAnalyzer {
 		case Lexer._filtertable:
 			if(val.length == 2) {
 				if(validate(1, Arrays.copyOfRange(val, 0, 1), Lexer.__integer))
-					return validate(1, Arrays.copyOfRange(val, 1, 2), Lexer.__text);				
-			}else return false;
+					return validate(1, Arrays.copyOfRange(val, 1, 2), Lexer.__text);	
+				else {
+					printSemanticError(val[0]);
+					return false;
+				}
+			}else {
+				wrongNumberOfValues(attr);
+				return false;
+			}
 		case Lexer._fixedposition:
 			if(val.length == 3) {
 				if(validate(1, Arrays.copyOfRange(val, 0, 1), Lexer._bottomleft, Lexer._bottomright, Lexer._topleft, Lexer._topright))
-					return validate(2, Arrays.copyOfRange(val, 1, 3), Lexer.__measure);				
-			}else return false;
+					return validate(2, Arrays.copyOfRange(val, 1, 3), Lexer.__measure);	
+				else {
+					printSemanticError(val[0]);
+					return false;
+				}
+			}else {
+				wrongNumberOfValues(attr);
+				return false;
+			}
 		case Lexer._fontfamily:
 			return validate(1, val, Lexer.__text);
 		case Lexer._fontsize:
